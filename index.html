@@ -5,138 +5,53 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <title>工程帳本 Ultimate v8.0 Safe</title>
+    <title>工程帳本 Ultimate Final v7.3</title>
     <style>
         /* --- 1. 核心變數 --- */
         :root {
-            /* 主題色 RGB (預設抹茶綠) */
-            --theme-r: 86;
-            --theme-g: 158; --theme-b: 138;
+            --theme-r: 86; --theme-g: 158; --theme-b: 138;
             --primary: rgb(var(--theme-r), var(--theme-g), var(--theme-b));
-            
-            --bg-std: #F8F9FA; 
-            --bg-card: #FFFFFF;
-            --text-main: #333333;
-            --text-sub: #888888;
-            --text-disabled: #BDBDBD;
+            --bg-std: #F8F9FA; --bg-card: #FFFFFF;
+            --text-main: #333333; --text-sub: #888888; --text-disabled: #BDBDBD;
             --border: #EEEEEE;
             --shadow: 0 4px 15px rgba(0,0,0,0.06);
-            
-            /* 較淺的紅色 (Danger) */
             --danger: #FF6B6B;
             --safe-bottom: env(safe-area-inset-bottom, 20px);
         }
-
-        /* 深色模式變數 */
         [data-mode="dark"] {
-            --bg-std: #121212;
-            --bg-card: #1E1E1E;
-            --text-main: #E0E0E0;
-            --text-sub: #A0A0A0;
-            --text-disabled: #555555;
-            --border: #333333;
-            --shadow: 0 4px 15px rgba(0,0,0,0.3);
+            --bg-std: #121212; --bg-card: #1E1E1E;
+            --text-main: #E0E0E0; --text-sub: #A0A0A0; --text-disabled: #555555;
+            --border: #333333; --shadow: 0 4px 15px rgba(0,0,0,0.3);
         }
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; user-select: none; font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", Roboto, sans-serif; }
+        body { margin: 0; background: var(--bg-std); color: var(--text-main); padding-bottom: calc(90px + var(--safe-bottom)); overflow-x: hidden; transition: background 0.3s ease, color 0.3s ease; }
 
-        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; user-select: none;
-            font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", Roboto, sans-serif; }
-        
-        body { 
-            margin: 0;
-            background: var(--bg-std);
-            color: var(--text-main);
-            padding-bottom: calc(90px + var(--safe-bottom)); 
-            overflow-x: hidden; 
-            transition: background 0.3s ease, color 0.3s ease;
-        }
-
-        /* --- 2. 頂部導航 --- */
-        .app-header {
-            position: sticky;
-            top: 0; z-index: 50; 
-            background: rgba(var(--bg-card-rgb, 255,255,255), 0.8); 
-            backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
-            padding: 10px 20px; display: flex; align-items: center;
-            justify-content: space-between;
-            border-bottom: 1px solid var(--border);
-        }
+        /* --- UI Components --- */
+        .app-header { position: sticky; top: 0; z-index: 50; background: rgba(var(--bg-card-rgb, 255,255,255), 0.8); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); padding: 10px 20px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid var(--border); }
         [data-mode="dark"] .app-header { background: rgba(30,30,30,0.8); }
-        
-        .date-trigger {
-            font-size: 1.4rem;
-            font-weight: 800; color: var(--text-main);
-            background: transparent; border: none; cursor: pointer; display: flex; align-items: center; gap: 6px;
-        }
+        .date-trigger { font-size: 1.4rem; font-weight: 800; color: var(--text-main); background: transparent; border: none; cursor: pointer; display: flex; align-items: center; gap: 6px; }
         .date-trigger::after { content: "▼"; font-size: 0.7rem; color: var(--text-sub); margin-top: 2px; }
-
-        .mode-toggle {
-            background: transparent;
-            border: 1px solid var(--border); 
-            width: 36px; height: 36px; border-radius: 50%;
-            display: flex; align-items: center; justify-content: center;
-            color: var(--text-main); cursor: pointer;
-            transition: all 0.2s;
-        }
-
+        .mode-toggle { background: transparent; border: 1px solid var(--border); width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: var(--text-main); cursor: pointer; transition: all 0.2s; }
+        
         .page { display: none; padding: 15px; animation: fadeIn 0.3s ease; }
         .page.active { display: block; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
 
-        .card { background: var(--bg-card);
-            border-radius: 18px; padding: 16px; margin-bottom: 16px; box-shadow: var(--shadow); position: relative; border: 1px solid var(--border);
-        }
-
-        /* --- 3. 日曆系統 --- */
+        .card { background: var(--bg-card); border-radius: 18px; padding: 16px; margin-bottom: 16px; box-shadow: var(--shadow); position: relative; border: 1px solid var(--border); }
+        
+        /* Cal */
         .cal-wrapper { touch-action: pan-y pinch-zoom; }
         .grid-7 { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); width: 100%; }
-        
-        .week-header { 
-            text-align: center;
-            font-size: 0.8rem; color: var(--text-sub); 
-            padding-bottom: 8px; border-bottom: 1px solid var(--border); margin-bottom: 4px;
-            white-space: nowrap;
-        }
-        
-        .day-cell {
-            min-height: 85px;
-            height: auto;
-            border-radius: 10px; padding: 2px; margin-bottom: 4px;
-            display: flex; flex-direction: column; align-items: center; 
-            border: 1px solid transparent; cursor: pointer;
-            position: relative;
-            overflow: hidden;
-        }
-        
-        .day-num { 
-            font-size: 1rem;
-            font-weight: 500; margin-bottom: 3px; 
-            width: 26px; height: 26px; display: flex; align-items: center; justify-content: center; 
-            border-radius: 50%; z-index: 2; flex-shrink: 0;
-        }
+        .week-header { text-align: center; font-size: 0.8rem; color: var(--text-sub); padding-bottom: 8px; border-bottom: 1px solid var(--border); margin-bottom: 4px; white-space: nowrap; }
+        .day-cell { min-height: 85px; height: auto; border-radius: 10px; padding: 2px; margin-bottom: 4px; display: flex; flex-direction: column; align-items: center; border: 1px solid transparent; cursor: pointer; position: relative; overflow: hidden; }
+        .day-num { font-size: 1rem; font-weight: 500; margin-bottom: 3px; width: 26px; height: 26px; display: flex; align-items: center; justify-content: center; border-radius: 50%; z-index: 2; flex-shrink: 0; }
         .day-cell.today .day-num { background: #E0E0E0; color: #333; font-weight: bold; } 
         .is-weekend { color: var(--danger); }
+        .site-tag { width: 95%; max-width: 100%; font-size: 10px; padding: 3px 6px; border-radius: 8px; color: white; margin-bottom: 1.5px; text-align: center; font-weight: bold; line-height: 1.2; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
-        .site-tag {
-            width: 95%;
-            max-width: 100%;
-            font-size: 10px; 
-            padding: 3px 6px; 
-            border-radius: 8px;
-            color: white;
-            margin-bottom: 1.5px; 
-            text-align: center; font-weight: bold; line-height: 1.2;
-            white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-            pointer-events: none; /* [Request II-3] 觀賞用，不可點 */
-        }
-
-        /* --- 4. 儀表板 & 列表 --- */
+        /* Dashboard */
         .dashboard-row { display: flex; gap: 12px; margin-bottom: 16px; }
-        .dash-card { 
-            flex: 1;
-            padding: 16px; border-radius: 18px; color: white; 
-            display: flex; flex-direction: column; justify-content: center; 
-            box-shadow: var(--shadow); cursor: pointer; position: relative; overflow: hidden;
-        }
+        .dash-card { flex: 1; padding: 16px; border-radius: 18px; color: white; display: flex; flex-direction: column; justify-content: center; box-shadow: var(--shadow); cursor: pointer; position: relative; overflow: hidden; }
         .dash-card.left { background: #546E7A; }
         .dash-card.right { background: #263238; }
         .dash-label { font-size: 0.85rem; opacity: 0.9; margin-bottom: 4px; }
@@ -145,198 +60,68 @@
         .worker-card { display: flex; justify-content: space-between; align-items: center; padding: 18px; margin-bottom: 10px; border: 1px solid var(--border); }
         .worker-card.disabled { color: var(--text-disabled); border-color: var(--border); }
         .worker-card.disabled b { color: var(--text-disabled); } 
-        
-        /* --- 按鈕樣式 (漸層) --- */
-        .btn { 
-            width: 100%;
-            padding: 14px; border: none; border-radius: 14px; 
-            font-weight: 700; font-size: 16px; cursor: pointer; color: white; 
-            margin-top: 10px;
-            background: linear-gradient(135deg, var(--primary), rgba(var(--theme-r), var(--theme-g), var(--theme-b), 0.7));
-            box-shadow: 0 4px 12px rgba(var(--theme-r), var(--theme-g), var(--theme-b), 0.3); 
-            transition: transform 0.1s, box-shadow 0.2s;
-        }
+
+        .btn { width: 100%; padding: 14px; border: none; border-radius: 14px; font-weight: 700; font-size: 16px; cursor: pointer; color: white; margin-top: 10px; background: linear-gradient(135deg, var(--primary), rgba(var(--theme-r), var(--theme-g), var(--theme-b), 0.7)); box-shadow: 0 4px 12px rgba(var(--theme-r), var(--theme-g), var(--theme-b), 0.3); transition: transform 0.1s, box-shadow 0.2s; }
         .btn:active { transform: scale(0.97); }
-
-        .btn-danger { 
-            background: linear-gradient(135deg, #FF6B6B, #E53935);
-            box-shadow: 0 4px 12px rgba(229, 57, 53, 0.3); 
-        }
-
-        .btn-hide { 
-            background: linear-gradient(135deg, #FF9999, #FF6B6B);
-            box-shadow: 0 4px 12px rgba(255, 107, 107, 0.3); 
-        }
-        
-        .btn-unhide {
-            background: linear-gradient(135deg, #78909C, #546E7A);
-            box-shadow: 0 4px 12px rgba(84, 110, 122, 0.3);
-        }
-
+        .btn-danger { background: linear-gradient(135deg, #FF6B6B, #E53935); box-shadow: 0 4px 12px rgba(229, 57, 53, 0.3); }
+        .btn-hide { background: linear-gradient(135deg, #FF9999, #FF6B6B); box-shadow: 0 4px 12px rgba(255, 107, 107, 0.3); }
+        .btn-unhide { background: linear-gradient(135deg, #78909C, #546E7A); box-shadow: 0 4px 12px rgba(84, 110, 122, 0.3); }
         .btn-ghost { background: var(--bg-std); color: var(--text-sub); box-shadow: none; border: 1px solid var(--border); }
         
-        .input-f { width: 100%;
-            padding: 14px; border: 1px solid var(--border); border-radius: 12px; font-size: 16px; margin-bottom: 12px; background: var(--bg-std); color: var(--text-main); outline: none;
-        }
+        .input-f { width: 100%; padding: 14px; border: 1px solid var(--border); border-radius: 12px; font-size: 16px; margin-bottom: 12px; background: var(--bg-std); color: var(--text-main); outline: none; }
         .input-f:focus { border-color: var(--primary); background: var(--bg-card); }
 
-        /* --- 5. 滾輪 & Picker --- */
-        .overlay {
-            position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.5); z-index: 2000; display: none; opacity: 0;
-            transition: opacity 0.2s;
-            align-items: center; justify-content: center;
-        }
-        .picker-container {
-            position: fixed;
-            bottom: 0; width: 100%; background: var(--bg-card); z-index: 2100;
-            border-radius: 24px 24px 0 0; padding: 20px 0;
-            transform: translateY(100%);
-            transition: transform 0.3s cubic-bezier(0.1, 0.9, 0.2, 1);
-        }
-        .picker-actions { display: flex;
-            justify-content: space-between; padding: 0 24px 15px; font-weight: 600; font-size: 1rem; color: var(--text-main);
-        }
-        .picker-body { 
-            height: 220px;
-            display: flex; position: relative; overflow: hidden; 
-            mask-image: linear-gradient(to bottom, transparent, black 20%, black 80%, transparent);
-            -webkit-mask-image: linear-gradient(to bottom, transparent, black 20%, black 80%, transparent); 
-        }
-        .picker-col { flex: 1;
-            overflow-y: scroll; scroll-snap-type: y mandatory; text-align: center; padding: 90px 0;
-        }
+        /* Picker & Overlay */
+        .overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 2000; display: none; opacity: 0; transition: opacity 0.2s; align-items: center; justify-content: center; }
+        .picker-container { position: fixed; bottom: 0; width: 100%; background: var(--bg-card); z-index: 2100; border-radius: 24px 24px 0 0; padding: 20px 0; transform: translateY(100%); transition: transform 0.3s cubic-bezier(0.1, 0.9, 0.2, 1); }
+        .picker-actions { display: flex; justify-content: space-between; padding: 0 24px 15px; font-weight: 600; font-size: 1rem; color: var(--text-main); }
+        .picker-body { height: 220px; display: flex; position: relative; overflow: hidden; mask-image: linear-gradient(to bottom, transparent, black 20%, black 80%, transparent); -webkit-mask-image: linear-gradient(to bottom, transparent, black 20%, black 80%, transparent); }
+        .picker-col { flex: 1; overflow-y: scroll; scroll-snap-type: y mandatory; text-align: center; padding: 90px 0; }
         .picker-col::-webkit-scrollbar { display: none; }
-        .picker-item { height: 40px; line-height: 40px; scroll-snap-align: center; font-size: 1.1rem; color: var(--text-sub);
-            transition: all 0.1s; }
-        .picker-item.active { color: var(--text-main); font-size: 1.5rem; font-weight: 800;
-            transform: scale(1.1); }
-        .picker-highlight { position: absolute; top: 50%; left: 0; width: 100%;
-            height: 40px; margin-top: -20px; background: rgba(128,128,128,0.05); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); pointer-events: none;
-        }
+        .picker-item { height: 40px; line-height: 40px; scroll-snap-align: center; font-size: 1.1rem; color: var(--text-sub); transition: all 0.1s; }
+        .picker-item.active { color: var(--text-main); font-size: 1.5rem; font-weight: 800; transform: scale(1.1); }
+        .picker-highlight { position: absolute; top: 50%; left: 0; width: 100%; height: 40px; margin-top: -20px; background: rgba(128,128,128,0.05); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); pointer-events: none; }
 
-        /* --- 6. Modal --- */
-        .modal-box {
-            background: var(--bg-card);
-            width: 88%; max-width: 380px; max-height: 85vh;
-            border-radius: 24px; 
-            position: relative;
-            transform: scale(0.95); transition: transform 0.2s;
-            display: flex; 
-            flex-direction: column;
-            overflow: hidden;
-        }
-        .modal-box.medium {
-            max-height: 75vh; 
-        }
-
-        .modal-header {
-            padding: 15px 15px 5px 15px;
-            flex-shrink: 0;
-            display: flex; justify-content: flex-end; 
-        }
-        .modal-content-scroll {
-            padding: 0 24px 24px 24px;
-            overflow-y: auto; 
-            flex: 1;
-        }
-        .modal-close { 
-            width: 30px;
-            height: 30px; 
-            display:flex; align-items:center; justify-content:center; 
-            background: var(--bg-std); border-radius:50%; color: var(--text-sub); cursor:pointer;
-        }
+        /* Modal */
+        .modal-box { background: var(--bg-card); width: 88%; max-width: 380px; max-height: 85vh; border-radius: 24px; position: relative; transform: scale(0.95); transition: transform 0.2s; display: flex; flex-direction: column; overflow: hidden; }
+        .modal-box.medium { max-height: 80vh; }
+        .modal-header { padding: 15px 15px 5px 15px; flex-shrink: 0; display: flex; justify-content: flex-end; }
+        .modal-content-scroll { padding: 0 24px 24px 24px; overflow-y: auto; flex: 1; }
+        .modal-close { width: 30px; height: 30px; display:flex; align-items:center; justify-content:center; background: var(--bg-std); border-radius:50%; color: var(--text-sub); cursor:pointer; }
         
-        .quick-site-row {
-            display: flex;
-            justify-content: space-between; align-items: center;
-            background: var(--bg-card); border: 1px solid var(--border); border-radius: 12px;
-            padding: 12px; margin-bottom: 10px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.03);
-            cursor: pointer; transition: background 0.1s;
-        }
+        .quick-site-row { display: flex; justify-content: space-between; align-items: center; background: var(--bg-card); border: 1px solid var(--border); border-radius: 12px; padding: 12px; margin-bottom: 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.03); cursor: pointer; transition: background 0.1s; }
         .quick-site-row:active { background: var(--bg-std); }
 
-        /* --- 7. 設定 & 主題球 --- */
-        .theme-grid { 
-            display: grid;
-            grid-template-columns: repeat(7, 1fr); 
-            gap: 8px;
-            margin: 15px 0; justify-items: center;
-        }
-        .theme-dot { 
-            width: 100%;
-            aspect-ratio: 1; 
-            border-radius: 50%; cursor: pointer;
-            border: 3px solid transparent; 
-            transition: transform 0.2s; box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-        }
+        /* Settings & Nav */
+        .theme-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 8px; margin: 15px 0; justify-items: center; }
+        .theme-dot { width: 100%; aspect-ratio: 1; border-radius: 50%; cursor: pointer; border: 3px solid transparent; transition: transform 0.2s; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
         .theme-dot.active { transform: scale(1.15); border-color: var(--text-main); }
-
-        .bottom-nav {
-            position: fixed;
-            bottom: 0; width: 100%; height: calc(70px + var(--safe-bottom));
-            background: var(--bg-card); border-top: 1px solid var(--border); display: flex; justify-content: space-around;
-            padding-bottom: var(--safe-bottom);
-            z-index: 100;
-        }
-        .nav-item { flex: 1; display: flex; flex-direction: column; align-items: center;
-            justify-content: center; color: var(--text-sub); font-size: 10px; transition: color 0.2s; }
+        .bottom-nav { position: fixed; bottom: 0; width: 100%; height: calc(70px + var(--safe-bottom)); background: var(--bg-card); border-top: 1px solid var(--border); display: flex; justify-content: space-around; padding-bottom: var(--safe-bottom); z-index: 100; }
+        .nav-item { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; color: var(--text-sub); font-size: 10px; transition: color 0.2s; }
         .nav-item.active { color: var(--primary); font-weight: bold; }
         .nav-item svg { width: 26px; height: 26px; margin-bottom: 4px; fill: currentColor; }
-
-        .icon-svg { width: 20px; height: 20px; stroke: currentColor; fill: none;
-            stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+        
+        /* Icons */
+        .icon-svg { width: 20px; height: 20px; stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
         .icon-svg-sm { width: 16px; height: 16px; stroke: currentColor; fill: none; stroke-width: 2; }
-
-        .chk-row { display: flex; justify-content: space-between;
-            align-items: center; padding: 12px 5px; border-bottom: 1px dashed var(--border); }
+        
+        .chk-row { display: flex; justify-content: space-between; align-items: center; padding: 12px 5px; border-bottom: 1px dashed var(--border); }
         .chk-row input[type="checkbox"] { width: 22px; height: 22px; accent-color: var(--primary); }
         .chk-row.disabled-row { color: var(--text-disabled); }
+        .fab-btn { position: fixed; bottom: calc(85px + var(--safe-bottom)); right: 20px; width: 56px; height: 56px; border-radius: 50%; background: #263238; color: white; border: none; box-shadow: 0 6px 20px rgba(0,0,0,0.25); display: flex; align-items: center; justify-content: center; z-index: 90; }
 
-        .fab-btn {
-            position: fixed;
-            bottom: calc(85px + var(--safe-bottom)); right: 20px;
-            width: 56px; height: 56px; border-radius: 50%;
-            background: #263238; color: white; border: none;
-            box-shadow: 0 6px 20px rgba(0,0,0,0.25); 
-            display: flex; align-items: center; justify-content: center; z-index: 90;
-        }
-        
-        /* 個人日曆樣式 */
-        .p-cal-row {
-            display: flex;
-            gap: 10px; padding: 10px 0; border-bottom: 1px solid var(--border);
-        }
-        .p-cal-date {
-            width: 50px;
-            font-weight: bold; text-align: center;
-            display: flex; flex-direction: column; align-items: center;
-        }
+        /* Detail Rows */
+        .p-cal-row { display: flex; gap: 10px; padding: 10px 0; border-bottom: 1px solid var(--border); }
+        .p-cal-date { width: 50px; font-weight: bold; text-align: center; display: flex; flex-direction: column; align-items: center; }
         .p-cal-content { flex: 1; font-size: 0.9rem; }
         .p-cal-site { margin-bottom: 4px; }
         .p-cal-extra { color: var(--text-sub); font-size: 0.85rem; margin-top: 2px; }
 
-        /* [New] 案場清單樣式 */
-        .project-row {
-            background: var(--bg-std); 
-            margin: 5px 0; 
-            padding: 12px; 
-            border-radius: 12px; 
-            display: flex; 
-            justify-content: space-between; 
-            align-items: center; 
-            cursor: pointer; 
-            transition: background 0.1s;
-        }
-        .project-row:active { background: #EEE; }
-
+        /* [Request 4] Site Filter Sticky Footer */
         .modal-sticky-footer {
             position: sticky; bottom: -1px; background: var(--bg-card);
             padding: 15px 0 5px 0; border-top: 1px solid var(--border); margin-top: auto;
         }
-
     </style>
 </head>
 <body>
@@ -367,7 +152,6 @@
                 </div>
                 <div id="calendarGrid" class="grid-7"></div>
             </div>
-            <div id="calendarDayList" style="padding: 0 10px; padding-bottom: 80px;"></div>
         </section>
 
         <section id="tab-work" class="page">
@@ -464,99 +248,60 @@
         </div>
     </nav>
 
-    <div id="modalDailyEdit" class="overlay" style="z-index:2200;">
-        <div class="modal-box">
-            <div class="modal-header">
-                <div class="modal-close" onclick="closeModal('modalDailyEdit')">
-                    <svg class="icon-svg" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
-                </div>
+    <div id="pickerOverlay" class="overlay" onclick="closePicker()">
+        <div id="modalDatePicker" class="picker-container" onclick="event.stopPropagation()">
+            <div class="picker-actions">
+                <span style="color:var(--text-sub); cursor:pointer;" onclick="closePicker()">取消</span>
+                <span style="color:var(--text-sub); font-weight:400">選擇月份</span>
+                <span style="color:var(--primary); cursor:pointer;" onclick="confirmDate()">確定</span>
             </div>
-            <div class="modal-content-scroll">
-                <h3 id="dailyEditTitle">2026-01-01</h3>
-                <input id="deId" type="hidden">
-                <input id="deDate" type="hidden">
-                
-                <select id="deProjectSelect" class="input-f" style="margin-bottom:15px; appearance: none; background: var(--bg-std); background-image: url('data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\' width=\'24\' height=\'24\' viewBox=\'0 0 24 24\' fill=\'none\' stroke=\'%23888\' stroke-width=\'2\' stroke-linecap=\'round\' stroke-linejoin=\'round\'><polyline points=\'6 9 12 15 18 9\'/></svg>'); background-repeat: no-repeat; background-position: right 10px center; padding-right:30px;">
-                    <option value="" disabled selected>請選擇案場...</option>
-                </select>
-
-                <div style="display:flex; justify-content:space-between; margin-bottom:10px">
-                    <b>上工師傅</b>
-                    <input id="deWorkerFilter" style="padding:4px; font-size:12px; width:100px; border:1px solid var(--border); border-radius:6px; background:var(--bg-std); color:var(--text-main)" placeholder="搜尋..." oninput="renderDailyWorkerSelect()">
-                </div>
-                <div id="deWorkerList" style="max-height:220px; overflow-y:auto; border:1px solid var(--border); padding:10px; border-radius:10px; margin-bottom:15px;"></div>
-
-                <button class="btn" onclick="saveDailyWork()">加入</button>
+            <div class="picker-body">
+                <div class="picker-highlight"></div>
+                <div id="wheelY" class="picker-col"></div>
+                <div id="wheelM" class="picker-col"></div>
             </div>
         </div>
     </div>
 
-    <div id="modalPayment" class="overlay">
+    <div id="modalQuickAdd" class="overlay">
         <div class="modal-box">
             <div class="modal-header">
-                <div class="modal-close" onclick="closeModal('modalPayment')">
-                    <svg class="icon-svg" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
-                 </div>
-            </div>
-            <div class="modal-content-scroll">
-                <h3>案場請款管理</h3>
-                
-                <div style="margin-bottom:10px;">
-                    <div style="display:flex; justify-content:space-between; align-items:center;">
-                        <b>案主</b>
-                        <button class="btn-ghost" style="padding:4px 8px; font-size:12px; margin:0;" onclick="toggleAddClient()">+ 新增</button>
-                    </div>
-                    <div id="addClientBox" style="display:none; background:rgba(var(--theme-r),var(--theme-g),var(--theme-b),0.1); padding:10px; border-radius:8px; margin-top:5px;">
-                        <input id="newClientName" class="input-f" placeholder="名稱" style="margin-bottom:5px">
-                        <button class="btn" style="padding:8px; font-size:14px; margin:0;" onclick="saveClient()">加入</button>
-                    </div>
-                </div>
-
-                <div id="clientList" style="max-height:350px; overflow-y:auto; margin-bottom:10px;"></div>
-                
-                <div style="border-top:1px solid var(--border); padding-top:10px; margin-top:5px;">
-                    <div style="display:flex; justify-content:space-between; margin-bottom:10px; font-weight:bold; font-size:1.1rem;">
-                        <span>本月請款總計:</span>
-                        <span id="payTotalDisplay">$0</span>
-                    </div>
-                    <textarea id="payNote" class="input-f" style="height:60px;" placeholder="本月請款備註..."></textarea>
-                </div>
-                <button class="btn" onclick="closeModal('modalPayment')">關閉</button>
-            </div>
-        </div>
-    </div>
-
-    <div id="modalClientDetail" class="overlay" style="z-index:2100;">
-        <div class="modal-box">
-            <div class="modal-header">
-                <div class="modal-close" onclick="closeModal('modalClientDetail')">
+                <div class="modal-close" onclick="closeModal('modalQuickAdd')">
                     <svg class="icon-svg" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
                 </div>
             </div>
             <div class="modal-content-scroll">
-                <h3 id="clientDetailTitle">案主詳情</h3>
-                <input id="cdClientId" type="hidden">
-                
-                <button class="btn" style="margin-bottom:15px;" onclick="openProjectDefModal()">+ 新增案場</button>
-                
-                <div id="clientProjectList"></div>
+                <h3 id="quickDateTitle" style="margin-top:0; margin-bottom:15px;"></h3>
+                <button class="btn" style="margin-bottom:15px;" onclick="openSiteModal(null)">+ 新增案場</button>
+                <div style="font-size:0.85rem; color:var(--text-sub); margin-bottom:8px;">或複製本月曾經新增過的案場：</div>
+                <div id="quickSiteList" style="max-height:200px; overflow-y:auto;"></div>
+                <hr style="border-top:1px dashed var(--border); margin:15px 0;">
+                <div style="font-size:0.85rem; color:var(--text-main); font-weight:bold; margin-bottom:8px;">當日已安排：</div>
+                <div id="dayExistList"></div>
             </div>
         </div>
     </div>
 
-    <div id="modalProjectDef" class="overlay" style="z-index:2200;">
+    <div id="modalSite" class="overlay">
         <div class="modal-box">
             <div class="modal-header">
-                <div class="modal-close" onclick="closeModal('modalProjectDef')">
+                <div class="modal-close" onclick="closeModal('modalSite')">
                     <svg class="icon-svg" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
                 </div>
             </div>
             <div class="modal-content-scroll">
                 <h3>案場設定</h3>
-                <input id="pdId" type="hidden">
-                <input id="pdName" class="input-f" placeholder="案場名稱">
-                <div id="pdColorBox" class="theme-grid" style="margin-bottom:15px"></div>
-                <button class="btn" onclick="saveProjectDef()">儲存</button>
+                <input id="sId" type="hidden">
+                <input id="sDate" type="hidden">
+                <input id="sName" class="input-f" placeholder="案場名稱">
+                <div id="sColorBox" class="theme-grid" style="margin-bottom:15px"></div>
+                <div style="display:flex; justify-content:space-between; margin-bottom:10px">
+                    <b>上工師傅</b>
+                    <input id="sWorkerFilter" style="padding:4px; font-size:12px; width:100px; border:1px solid var(--border); border-radius:6px; background:var(--bg-std); color:var(--text-main)" placeholder="搜尋..." oninput="renderSiteWorkerSelect()">
+                </div>
+                <div id="sWorkerList" style="max-height:180px; overflow-y:auto; border:1px solid var(--border); padding:10px; border-radius:10px; margin-bottom:15px;"></div>
+                <button class="btn" onclick="saveSite()">儲存</button>
+                <button id="btnDelSite" class="btn btn-danger" style="margin-top:10px; display:none;" onclick="delSite()">刪除</button>
             </div>
         </div>
     </div>
@@ -579,6 +324,7 @@
                 <input id="wRate" type="number" class="input-f" placeholder="標準日薪">
                 <input id="wPhone" class="input-f" placeholder="聯絡電話">
                 <textarea id="wNote" class="input-f" placeholder="備註..." style="height:60px"></textarea>
+                
                 <div id="wStatsBlock" style="display:none; background:var(--bg-std); padding:12px; border-radius:12px; margin-bottom:15px; cursor:pointer" onclick="openPersonalCalendar(document.getElementById('wId').value)">
                     <div style="font-size:0.9rem; font-weight:bold; margin-bottom:5px; display:flex; justify-content:space-between;">
                         <span>本月薪資</span>
@@ -593,20 +339,25 @@
                         總計：$<span id="wFinalPay">0</span>
                     </div>
                 </div>
+
                 <div id="wExtraBlock" style="display:none;">
                     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:5px;">
                         <b>個人雜費</b>
                         <button class="btn-ghost" style="padding:4px 8px; font-size:12px; margin:0;" onclick="toggleAddExtra()">+ 新增</button>
                     </div>
                     <div id="addExtraBox" style="display:none; background:rgba(var(--theme-r),var(--theme-g),var(--theme-b),0.1); padding:10px; border-radius:8px; margin-bottom:10px;">
-                        <input id="exDate" type="date" class="input-f" style="margin-bottom:5px">
-                        <select id="exSite" class="input-f" style="margin-bottom:5px"></select>
+                        <input id="exDate" type="date" class="input-f" style="margin-bottom:5px" onchange="updateExtraSiteSelect('exDate', 'exSite')">
+                        <select id="exSite" class="input-f" style="margin-bottom:5px; appearance: none; -webkit-appearance: none; background-image: url('data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\' width=\'24\' height=\'24\' viewBox=\'0 0 24 24\' fill=\'none\' stroke=\'%23888\' stroke-width=\'2\' stroke-linecap=\'round\' stroke-linejoin=\'round\'><polyline points=\'6 9 12 15 18 9\'/></svg>'); background-repeat: no-repeat; background-position: right 10px center; padding-right: 30px;">
+                            <option value="">(無案場)</option>
+                        </select>
                         <input id="exName" list="extraTypes" class="input-f" placeholder="項目 (可選或輸入)" style="margin-bottom:5px">
+                        
                         <input id="exAmt" type="number" class="input-f" placeholder="金額" style="margin-bottom:5px">
                         <button id="btnAddExtraAction" class="btn" style="padding:8px; font-size:14px; margin:0;" onclick="saveOneExtra()">加入</button>
                     </div>
                     <div id="wExtraList" style="max-height:160px; overflow-y:auto; border:1px solid var(--border); padding:5px;"></div>
                 </div>
+
                 <button class="btn" onclick="saveWorker()">儲存</button>
                 <div id="wActionBtns" style="display:none; gap:10px; margin-top:10px;">
                      <button class="btn btn-hide" onclick="toggleHideWorker()" style="margin-top:0">隱藏</button>
@@ -618,7 +369,11 @@
 
     <div id="modalPersonalCal" class="overlay">
         <div class="modal-box medium">
-            <div class="modal-header"><div class="modal-close" onclick="closeModal('modalPersonalCal')"><svg class="icon-svg" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg></div></div>
+            <div class="modal-header">
+                <div class="modal-close" onclick="closeModal('modalPersonalCal')">
+                    <svg class="icon-svg" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                </div>
+            </div>
             <div class="modal-content-scroll">
                 <h3>個人上工日曆</h3>
                 <h4 id="pcTitle" style="color:var(--text-sub); margin-top:0"></h4>
@@ -629,60 +384,106 @@
 
     <div id="modalExtraDetail" class="overlay">
         <div class="modal-box medium">
-             <div class="modal-header"><div class="modal-close" onclick="closeModal('modalExtraDetail')"><svg class="icon-svg" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg></div></div>
-            <div class="modal-content-scroll"><h3 id="edTitle">雜費細項</h3><div id="edList"></div></div>
+             <div class="modal-header">
+                <div class="modal-close" onclick="closeModal('modalExtraDetail')">
+                    <svg class="icon-svg" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                </div>
+            </div>
+            <div class="modal-content-scroll">
+                <h3 id="edTitle">雜費細項</h3>
+                <div id="edList"></div>
+            </div>
         </div>
     </div>
 
     <div id="modalSiteSelect" class="overlay">
          <div class="modal-box" style="padding-bottom:0; display: flex; flex-direction: column;">
-            <div class="modal-header"><div class="modal-close" onclick="closeModal('modalSiteSelect')"><svg class="icon-svg" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg></div></div>
+            <div class="modal-header">
+                <div class="modal-close" onclick="closeModal('modalSiteSelect')">
+                    <svg class="icon-svg" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                </div>
+            </div>
             <div class="modal-content-scroll" style="flex:1;">
                 <h3>選擇本月案場</h3>
                 <div style="font-size:0.85rem; color:var(--text-sub); margin-bottom:10px;">勾選案場以篩選參與的師傅 (可複選)</div>
-                <div class="quick-site-row" onclick="clearSiteFilter()" style="justify-content:center; color:var(--text-sub);"><span>不篩選 (顯示全部)</span></div>
+                <div class="quick-site-row" onclick="clearSiteFilter()" style="justify-content:center; color:var(--text-sub);">
+                    <span>不篩選 (顯示全部)</span>
+                </div>
                 <div id="ssList"></div>
             </div>
-            <div class="modal-sticky-footer"><button class="btn" style="margin:0 24px 10px 24px; width:calc(100% - 48px);" onclick="saveSiteFilter()">確定</button></div>
+            <div class="modal-sticky-footer">
+                <button class="btn" style="margin:0 24px 10px 24px; width:calc(100% - 48px);" onclick="saveSiteFilter()">確定</button>
+            </div>
         </div>
     </div>
 
     <div id="modalMultiExtra" class="overlay">
         <div class="modal-box">
-            <div class="modal-header"><div class="modal-close" onclick="closeModal('modalMultiExtra')"><svg class="icon-svg" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg></div></div>
+            <div class="modal-header">
+                <div class="modal-close" onclick="closeModal('modalMultiExtra')">
+                    <svg class="icon-svg" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                </div>
+            </div>
             <div class="modal-content-scroll">
                 <h3>多人添加雜費</h3>
-                <input id="meDate" type="date" class="input-f">
-                <select id="meSite" class="input-f" style="margin-bottom:12px"></select>
+                <input id="meDate" type="date" class="input-f" onchange="updateExtraSiteSelect('meDate', 'meSite')">
+                
+                <select id="meSite" class="input-f" style="margin-bottom:12px; appearance: none; -webkit-appearance: none; background-image: url('data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\' width=\'24\' height=\'24\' viewBox=\'0 0 24 24\' fill=\'none\' stroke=\'%23888\' stroke-width=\'2\' stroke-linecap=\'round\' stroke-linejoin=\'round\'><polyline points=\'6 9 12 15 18 9\'/></svg>'); background-repeat: no-repeat; background-position: right 10px center; padding-right: 30px;">
+                    <option value="">(無案場)</option>
+                </select>
+
                 <input id="meName" list="extraTypes" class="input-f" placeholder="項目 (可選或輸入)">
+                
                 <input id="meAmt" type="number" class="input-f" placeholder="金額">
+                
                 <div style="margin:10px 0; display:flex; gap:10px;">
                     <input id="meFilter" class="input-f" style="margin-bottom:0; flex:1" placeholder="搜尋師傅..." oninput="renderMeList()">
                     <button class="btn-ghost" style="width:auto; padding:0 10px; white-space:nowrap; margin-top:0;" onclick="toggleAllMeCheckboxes()">全選</button>
                 </div>
                 <div id="meList" style="max-height:200px; overflow-y:auto; border:1px solid var(--border); padding:10px; border-radius:10px;"></div>
+                
                 <button class="btn" onclick="saveMultiExtra()">完成</button>
             </div>
         </div>
     </div>
 
-    <div id="modalQuickAdd" class="overlay">
+    <div id="modalPayment" class="overlay">
         <div class="modal-box">
-            <div class="modal-header"><div class="modal-close" onclick="closeModal('modalQuickAdd')">X</div></div>
-            <div class="modal-content-scroll">Old function call detected.</div>
+            <div class="modal-header">
+                <div class="modal-close" onclick="closeModal('modalPayment')">
+                    <svg class="icon-svg" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                 </div>
+            </div>
+            <div class="modal-content-scroll">
+                <h3>案場請款管理</h3>
+                <div style="font-size:0.8rem; color:var(--text-sub); margin-bottom:10px;">* 同名稱案場自動合併</div>
+                <div id="payList" style="max-height:280px; overflow-y:auto; margin-bottom:10px;"></div>
+                <div style="border-top:1px solid var(--border); padding-top:10px; margin-top:5px;">
+                    <div style="display:flex; justify-content:space-between; margin-bottom:10px; font-weight:bold; font-size:1.1rem;">
+                        <span>本月請款總計:</span>
+                        <span id="payTotalDisplay">$0</span>
+                    </div>
+                    <textarea id="payNote" class="input-f" style="height:60px;" placeholder="本月請款備註..."></textarea>
+                </div>
+                <button class="btn" onclick="closeModal('modalPayment')">關閉</button>
+            </div>
         </div>
     </div>
 
 <script>
-const THEMES = [{r:86,g:158,b:138,hex:'#569E8A'},{r:234,g:193,b:80,hex:'#EAC150'},{r:90,g:179,b:194,hex:'#5AB3C2'},{r:240,g:141,b:166,hex:'#F08DA6'},{r:157,g:131,b:180,hex:'#9D83B4'},{r:224,g:112,b:111,hex:'#E0706F'},{r:106,g:133,b:209,hex:'#6A85D1'}];
+/* --- 系統核心邏輯 --- */
+const THEMES = [
+    { r:86,  g:158, b:138, hex:'#569E8A' }, // Sage Green
+    { r:234, g:193, b:80,  hex:'#EAC150' }, // Mustard Yellow
+    { r:90,  g:179, b:194, hex:'#5AB3C2' }, // Sky Blue
+    { r:240, g:141, b:166, hex:'#F08DA6' }, // Rose Pink
+    { r:157, g:131, b:180, hex:'#9D83B4' }, // Lavender Purple
+    { r:224, g:112, b:111, hex:'#E0706F' }, // Coral Red
+    { r:106, g:133, b:209, hex:'#6A85D1' }  // Lighter Royal Blue
+];
 
 let db = {
-    workers: [], 
-    clients: [], // [New] { id, name }
-    projects: [], // [New] { id, clientId, name, colorIdx }
-    sites: [], // Now acts as Daily Work Record: { id, date, projectId, workers: [] }
-    extras: [], 
-    payments: [], 
+    workers: [], sites: [], extras: [], payments: [], 
     paymentMeta: {}, 
     savedPayAmts: {}, 
     settings: { theme: 0, gasUrl: '', gasLock: false, darkMode: false }
@@ -690,66 +491,30 @@ let db = {
 let editingExtraId = null; 
 let curDate = new Date();
 let selectedDateStr = "";
+
+// [Request 1] 案場篩選變數改為 Array (複選)
 let filterSiteIds = []; 
+// 用於 Multi Extra 同步篩選結果的緩存
 let currentFilteredWorkerIds = null;
 
-// ★★★ 安全初始化 (防止舊資料崩潰) ★★★
 window.onload = async () => {
-    try {
-        const local = localStorage.getItem('ENG_LEDGER_FINAL_V7');
-        if(local) db = JSON.parse(local);
-        
-        // --- 自動升級資料結構 ---
-        if(!db.clients) db.clients = [];
-        if(!db.projects) db.projects = [];
-        if(!db.savedPayAmts) db.savedPayAmts = {};
-        
-        // 如果有舊的案場 (sites) 但沒有 projects，自動生成 projects
-        // 避免一開始看不到顏色和名字
-        if (db.sites.length > 0 && db.projects.length === 0) {
-            // 找出所有獨特的案場名稱
-            const uniqueNames = [...new Set(db.sites.map(s => s.name))];
-            if (uniqueNames.length > 0) {
-                // 創建一個預設案主 "未分類案主"
-                const defaultClient = { id: 'c_legacy', name: '未分類案主' };
-                db.clients.push(defaultClient);
-                
-                uniqueNames.forEach((name, idx) => {
-                    // 從舊資料找顏色
-                    const oldSite = db.sites.find(s => s.name === name);
-                    const colorIdx = oldSite ? (oldSite.colorIdx || 0) : 0;
-                    
-                    const newProj = {
-                        id: 'p_legacy_' + idx,
-                        clientId: defaultClient.id,
-                        name: name,
-                        colorIdx: colorIdx
-                    };
-                    db.projects.push(newProj);
-                });
-                console.log("Auto-migrated legacy projects.");
-                saveDB(); // 儲存升級後的結構
-            }
-        }
-        
-        applyTheme(db.settings.theme);
-        if(db.settings.darkMode) toggleDarkMode(true);
-        renderPickerWheels();
-        updateHeaderDate();
-        switchPage('cal'); 
-        initGestures();
-        
-        if(db.settings.gasUrl) {
-            document.getElementById('gasUrl').value = db.settings.gasUrl;
-            document.getElementById('gasLock').checked = db.settings.gasLock;
-            toggleGasLock();
-            await syncCloud(true);
-        }
-    } catch (e) {
-        console.error("Init Error:", e);
-        // 如果真的嚴重錯誤，至少讓頁面能動
-        db = { workers: [], clients: [], projects: [], sites: [], extras: [], payments: [], settings: { theme: 0 } };
-        alert("系統檢測到資料格式衝突，已重置為安全模式。若資料重要請勿覆寫雲端。");
+    const local = localStorage.getItem('ENG_LEDGER_FINAL_V7');
+    if(local) db = JSON.parse(local);
+    if(!db.savedPayAmts) db.savedPayAmts = {};
+    
+    applyTheme(db.settings.theme);
+    if(db.settings.darkMode) toggleDarkMode(true);
+    renderPickerWheels();
+    updateHeaderDate();
+    
+    switchPage('cal'); 
+    initGestures();
+
+    if(db.settings.gasUrl) {
+        document.getElementById('gasUrl').value = db.settings.gasUrl;
+        document.getElementById('gasLock').checked = db.settings.gasLock;
+        toggleGasLock();
+        await syncCloud(true);
     }
 };
 
@@ -769,9 +534,7 @@ async function syncCloud(isPull) {
             const data = await res.json();
             if(data.workers) { 
                 db = data;
-                // 確保雲端拉下來的資料也有新結構
-                if(!db.clients) db.clients = [];
-                if(!db.projects) db.projects = [];
+                if(!db.savedPayAmts) db.savedPayAmts = {};
                 renderAll();
             }
         } else {
@@ -782,16 +545,16 @@ async function syncCloud(isPull) {
 }
 
 function renderAll() {
-    if(document.getElementById('tab-cal').classList.contains('active')) {
-        renderCalendar();
-        if(selectedDateStr) renderDayWorkList(selectedDateStr);
-    }
+    if(document.getElementById('tab-cal').classList.contains('active')) renderCalendar();
     if(document.getElementById('tab-work').classList.contains('active')) renderWorkerList();
     if(document.getElementById('tab-set').classList.contains('active')) renderThemeGrid();
+    renderSiteColorBox();
 }
 
+/* --- 深色模式 --- */
 function toggleDarkMode(forceState) {
     const isDark = typeof forceState === 'boolean' ? forceState : !document.body.hasAttribute('data-mode');
+    
     if (isDark) {
         document.body.setAttribute('data-mode', 'dark');
         document.getElementById('iconMoon').style.display = 'none';
@@ -801,16 +564,27 @@ function toggleDarkMode(forceState) {
         document.getElementById('iconMoon').style.display = 'block';
         document.getElementById('iconSun').style.display = 'none';
     }
+    
     db.settings.darkMode = isDark;
-    if(typeof forceState !== 'boolean') { saveDB(); if(document.getElementById('tab-cal').classList.contains('active')) switchPage('cal'); }
+    if(typeof forceState !== 'boolean') {
+        saveDB();
+        if(document.getElementById('tab-cal').classList.contains('active')) {
+             switchPage('cal');
+        }
+    }
 }
 
+/* --- 手勢 (Swipe) --- */
 function initGestures() {
     const cal = document.getElementById('calWrapper');
     let startX = 0;
     cal.addEventListener('touchstart', e => startX = e.touches[0].clientX, {passive: true});
     cal.addEventListener('touchend', e => {
-        if(Math.abs(e.changedTouches[0].clientX - startX) > 50) changeMonth(e.changedTouches[0].clientX - startX > 0 ? -1 : 1);
+        let diff = e.changedTouches[0].clientX - startX;
+        if(Math.abs(diff) > 50) {
+            if(diff > 0) changeMonth(-1);
+            else changeMonth(1);
+        }
     });
 }
 function changeMonth(dir) {
@@ -818,6 +592,8 @@ function changeMonth(dir) {
     updateHeaderDate();
     renderCalendar();
 }
+
+/* --- 日曆邏輯 --- */
 function updateHeaderDate() {
     document.getElementById('dispYear').innerText = curDate.getFullYear();
     document.getElementById('dispMonth').innerText = curDate.getMonth() + 1;
@@ -826,6 +602,7 @@ function updateHeaderDate() {
 function renderCalendar() {
     const grid = document.getElementById('calendarGrid');
     grid.innerHTML = "";
+    
     const y = curDate.getFullYear();
     const m = curDate.getMonth();
     const firstDay = new Date(y, m, 1).getDay();
@@ -839,319 +616,963 @@ function renderCalendar() {
         const dateStr = `${y}-${String(m+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
         const dayOfWeek = new Date(y, m, d).getDay();
         const isToday = today.getFullYear() === y && today.getMonth() === m && today.getDate() === d;
-        if (isToday) cell.classList.add('today');
         
+        if (isToday) cell.classList.add('today');
+        let numHtml = `<div class="day-num ${dayOfWeek===0||dayOfWeek===6 ? 'is-weekend':''}">${d}</div>`;
+        
+        const daySites = db.sites.filter(s => s.date === dateStr);
         let tagsHtml = '';
-        const records = db.sites.filter(s => s.date === dateStr);
-        records.forEach(r => {
-            // 安全獲取顏色與名稱 (相容舊資料)
-            let colorIdx = 0;
-            let name = r.name || "Unknown";
-            
-            if (r.projectId) {
-                const proj = db.projects.find(p => p.id === r.projectId);
-                if (proj) {
-                    colorIdx = proj.colorIdx;
-                    name = proj.name;
-                }
-            } else if (r.colorIdx !== undefined) {
-                colorIdx = r.colorIdx; // 舊資料
-            }
-            
-            const theme = THEMES[colorIdx] || THEMES[0];
-            tagsHtml += `<div class="site-tag" style="background:${theme.hex}">${name}</div>`;
+        daySites.forEach(s => {
+            const c = THEMES[s.colorIdx || 0].hex;
+            tagsHtml += `<div class="site-tag" style="background:${c}">${s.name}</div>`;
         });
-
-        cell.innerHTML = `<div class="day-num ${dayOfWeek===0||dayOfWeek===6 ? 'is-weekend':''}">${d}</div>` + tagsHtml;
+        cell.innerHTML = numHtml + tagsHtml;
         cell.onclick = () => openQuickAdd(dateStr);
         grid.appendChild(cell);
     }
-    // 如果有選中日期，刷新下方列表
-    if(selectedDateStr && selectedDateStr.startsWith(`${y}-${String(m+1).padStart(2,'0')}`)) {
-        renderDayWorkList(selectedDateStr);
-    } else {
-        document.getElementById('calendarDayList').innerHTML = "";
-    }
+    
+    setTimeout(resizeTags, 10);
 }
 
-/* --- Calendar Interactions --- */
+function resizeTags() {
+    document.querySelectorAll('.site-tag').forEach(el => {
+        let size = 11;
+        el.style.fontSize = size + 'px';
+        while (el.scrollWidth > el.clientWidth && size > 8) {
+            size--;
+            el.style.fontSize = size + 'px';
+        }
+    });
+}
+
+/* --- Quick Add Logic --- */
 function openQuickAdd(dateStr) {
     selectedDateStr = dateStr;
-    renderDayWorkList(dateStr);
-    const listEl = document.getElementById('calendarDayList');
-    if(listEl) listEl.scrollIntoView({ behavior: 'smooth' });
-}
-
-function renderDayWorkList(dateStr) {
-    const container = document.getElementById('calendarDayList');
-    container.innerHTML = "";
-    
-    // 新增按鈕 (開啟 modalDailyEdit)
-    const addBtn = document.createElement('button');
-    addBtn.className = "btn";
-    addBtn.innerText = "+ 新增本日案場";
-    addBtn.onclick = () => openDailyWorkModal(null, dateStr);
-    container.appendChild(addBtn);
-
-    const records = db.sites.filter(s => s.date === dateStr);
-    records.forEach(r => {
-        let colorIdx = 0;
-        let name = r.name || "Unknown";
-        
-        if(r.projectId) {
-            const p = db.projects.find(x => x.id === r.projectId);
-            if(p) { colorIdx = p.colorIdx; name = p.name; }
-        } else if (r.colorIdx !== undefined) {
-            colorIdx = r.colorIdx;
-        }
-        const c = (THEMES[colorIdx] || THEMES[0]).hex;
-        
+    document.getElementById('quickDateTitle').innerText = dateStr;
+    const daySites = db.sites.filter(s => s.date === dateStr);
+    const dayList = document.getElementById('dayExistList');
+    dayList.innerHTML = "";
+    daySites.forEach(s => {
         const row = document.createElement('div');
-        row.className = "card";
-        row.style.cssText = "display:flex; justify-content:space-between; align-items:center; padding:12px; margin-top:10px; margin-bottom:0; cursor:pointer;";
-        row.innerHTML = `
-            <div style="display:flex; flex-direction:column;">
-                <div style="font-weight:bold; font-size:1.1rem; display:flex; align-items:center;">
-                    <div style="width:12px; height:12px; background:${c}; border-radius:50%; margin-right:8px;"></div>
-                    ${name}
-                </div>
-                <div style="color:var(--text-sub); font-size:0.9rem; margin-top:4px;">${r.workers.length} 人上工</div>
-            </div>
-            <button class="btn-danger" style="width:auto; padding:8px 12px; margin:0;" onclick="event.stopPropagation(); delDailyWork('${r.id}')">刪</button>
-        `;
-        row.onclick = () => openDailyWorkModal(r.id, dateStr);
-        container.appendChild(row);
+        row.className = 'quick-site-row';
+        row.style.background = 'rgba(255, 107, 107, 0.1)'; 
+        row.innerHTML = `<span style="font-weight:bold">${s.name} (${s.workers.length}人)</span> <span style="color:var(--danger);font-weight:bold" onclick="event.stopPropagation();delSite('${s.id}')">刪除</span>`;
+        row.onclick = () => openSiteModal(s.id);
+        dayList.appendChild(row);
     });
+    const ym = dateStr.slice(0, 7);
+    const monthSites = db.sites.filter(s => s.date.startsWith(ym));
+    const uniqueMap = new Map();
+    monthSites.forEach(s => uniqueMap.set(s.name, s));
+    const quickList = document.getElementById('quickSiteList');
+    quickList.innerHTML = "";
+    
+    uniqueMap.forEach((s, name) => {
+        const row = document.createElement('div');
+        row.className = 'quick-site-row';
+        const c = THEMES[s.colorIdx || 0].hex;
+        row.innerHTML = `<span style="display:flex;align-items:center"><div style="width:10px;height:10px;border-radius:50%;background:${c};margin-right:8px"></div>${name}</span> <span>+</span>`;
+        row.onclick = () => cloneSiteAndEdit(s, dateStr);
+        quickList.appendChild(row);
+    });
+    if(uniqueMap.size === 0) quickList.innerHTML = "<div style='text-align:center;color:var(--text-sub);padding:10px'>本月尚無其他案場</div>";
+    openModal('modalQuickAdd');
 }
 
-/* --- Daily Work Edit Modal --- */
-function openDailyWorkModal(recordId, dateStr) {
-    const modal = document.getElementById('modalDailyEdit');
-    modal.style.display = 'flex';
-    setTimeout(() => modal.style.opacity = 1, 10);
-    
-    document.getElementById('dailyEditTitle').innerText = dateStr;
-    document.getElementById('deId').value = recordId || "";
-    document.getElementById('deDate').value = dateStr;
-    
-    // 案場下拉選單 (只列出已定義的 Projects)
-    const select = document.getElementById('deProjectSelect');
-    select.innerHTML = '<option value="" disabled selected>請選擇案場...</option>';
-    
-    // 如果 db.projects 是空的 (舊資料未自動升級成功)，至少列出舊資料的名稱防止無法選擇
-    if (db.projects.length === 0 && db.sites.length > 0) {
-       // 這部分已在 window.onload 處理過，理論上不會發生，但做個保險
-    }
+function cloneSiteAndEdit(templateSite, targetDate) {
+    const newSite = {
+        id: 's' + Date.now(),
+        date: targetDate,
+        name: templateSite.name,
+        colorIdx: templateSite.colorIdx,
+        workers: [] 
+    };
+    db.sites.push(newSite);
+    saveDB();
+    closeModal('modalQuickAdd');
+    renderCalendar();
+    setTimeout(() => openSiteModal(newSite.id), 200); 
+}
 
-    db.projects.forEach(p => {
-        select.innerHTML += `<option value="${p.id}">${p.name}</option>`;
+/* --- iOS 滾輪 --- */
+function renderPickerWheels() {
+    const wy = document.getElementById('wheelY');
+    const wm = document.getElementById('wheelM');
+    
+    if(wy.children.length > 0) return;
+    for(let i=2020; i<=2035; i++) {
+        const div = document.createElement('div');
+        div.className = 'picker-item';
+        div.innerText = i + '年'; div.dataset.val = i;
+        wy.appendChild(div);
+    }
+    for(let i=1; i<=12; i++) {
+        const div = document.createElement('div');
+        div.className = 'picker-item'; div.innerText = i + '月'; div.dataset.val = i;
+        wm.appendChild(div);
+    }
+    [wy, wm].forEach(el => el.addEventListener('scroll', updatePickerFocus));
+}
+
+function updatePickerFocus(e) {
+    const el = e.target;
+    const center = el.scrollTop + 110; 
+    let minDiff = Infinity;
+    let closestItem = null;
+    el.querySelectorAll('.picker-item').forEach(it => {
+        const itemCenter = it.offsetTop + it.offsetHeight / 2;
+        const diff = Math.abs(center - itemCenter);
+        if(diff < minDiff) {
+            minDiff = diff;
+            closestItem = it;
+        }
+    });
+    el.querySelectorAll('.picker-item').forEach(it => it.classList.remove('active'));
+    if(closestItem) closestItem.classList.add('active');
+}
+
+function openDatePicker() {
+    const el = document.getElementById('modalDatePicker');
+    const overlay = document.getElementById('pickerOverlay');
+    el.style.transform = 'translateY(0)';
+    overlay.style.display = 'flex';
+    setTimeout(()=>overlay.style.opacity=1, 10);
+    
+    setTimeout(() => {
+        const wy = document.getElementById('wheelY');
+        const wm = document.getElementById('wheelM');
+        const yItem = [...wy.children].find(c => c.dataset.val == curDate.getFullYear());
+        const mItem = [...wm.children].find(c => c.dataset.val == curDate.getMonth()+1);
+        if(yItem) wy.scrollTop = yItem.offsetTop - 90;
+        if(mItem) wm.scrollTop = mItem.offsetTop - 90;
+    }, 100);
+}
+
+function closePicker() {
+    const el = document.getElementById('modalDatePicker');
+    const overlay = document.getElementById('pickerOverlay');
+    el.style.transform = 'translateY(100%)';
+    overlay.style.opacity=0;
+    setTimeout(()=>overlay.style.display='none', 200);
+}
+
+function confirmDate() {
+    const yEl = document.querySelector('#wheelY .active');
+    const mEl = document.querySelector('#wheelM .active');
+    if(yEl && mEl) {
+        curDate.setFullYear(parseInt(yEl.dataset.val));
+        curDate.setMonth(parseInt(mEl.dataset.val)-1);
+        updateHeaderDate();
+        renderCalendar();
+        // 切換月份時，清空案場篩選
+        filterSiteIds = [];
+        
+        if(document.getElementById('tab-work').classList.contains('active')) renderWorkerList();
+        if(document.getElementById('tab-cal').classList.contains('active')) switchPage('cal');
+    }
+    closePicker();
+}
+
+/* --- 案場請款 --- */
+function openPaymentModal() {
+    const list = document.getElementById('payList');
+    list.innerHTML = "";
+    const ym = `${curDate.getFullYear()}-${String(curDate.getMonth()+1).padStart(2,'0')}`;
+    const monthSites = db.sites.filter(s => s.date.startsWith(ym));
+    const uniqueNames = [...new Set(monthSites.map(s => s.name))];
+    let totalAmt = 0;
+
+    uniqueNames.forEach(name => {
+        const sitesWithName = monthSites.filter(s => s.name === name);
+        const repId = sitesWithName[0].id;
+        
+        const existingPay = db.payments.find(p => p.siteId === repId);
+        const isPaid = !!existingPay;
+        
+        let displayAmount = '';
+        if (existingPay) {
+             displayAmount = existingPay.amount || '';
+        } else {
+            displayAmount = db.savedPayAmts[repId] || '';
+        }
+        
+        if(isPaid && displayAmount) totalAmt += parseInt(displayAmount);
+
+        const div = document.createElement('div');
+        div.className = 'card';
+        div.style.padding = '12px';
+        div.style.marginBottom = '8px';
+        div.style.display = 'flex'; 
+        div.style.justifyContent='space-between'; 
+        div.style.alignItems='center';
+        div.style.borderLeft = isPaid ? '5px solid #ccc' : '5px solid ' + THEMES[db.settings.theme].hex;
+        
+        div.innerHTML = `
+            <b style="flex:1">${name}</b> 
+            <div style="display:flex;align-items:center;gap:10px">
+                <input type="number" class="input-f" style="margin:0;padding:8px;width:80px;text-align:right" 
+                    placeholder="$" value="${displayAmount}" 
+                    oninput="updatePayAmount('${repId}', this.value)" onclick="event.stopPropagation()">
+                <input type="checkbox" style="width:22px;height:22px;accent-color:var(--primary);cursor:pointer" 
+                    ${isPaid?'checked':''} 
+                    onchange="toggleGroupPay('${name}', '${repId}', this)">
+            </div>
+        `;
+        list.appendChild(div);
     });
 
-    let currentWorkers = [];
-    if(recordId) {
-        const r = db.sites.find(s => s.id === recordId);
-        if(r) {
-            // 如果是舊資料沒有 projectId，試著用名稱對應
-            if (r.projectId) {
-                select.value = r.projectId;
-            } else {
-                // 嘗試找同名 project
-                const p = db.projects.find(proj => proj.name === r.name);
-                if(p) select.value = p.id;
-            }
-            currentWorkers = r.workers;
+    if(uniqueNames.length === 0) list.innerHTML = "<div style='text-align:center;color:var(--text-sub)'>本月無案場</div>";
+    
+    document.getElementById('payTotalDisplay').innerText = `$${totalAmt.toLocaleString()}`;
+    
+    const noteArea = document.getElementById('payNote');
+    noteArea.value = db.paymentMeta && db.paymentMeta[ym] ? db.paymentMeta[ym] : "";
+    noteArea.onchange = () => {
+        if(!db.paymentMeta) db.paymentMeta = {};
+        db.paymentMeta[ym] = noteArea.value;
+        saveDB();
+    };
+
+    openModal('modalPayment');
+}
+
+function updatePayAmount(repId, val) {
+    db.savedPayAmts[repId] = val;
+    const idx = db.payments.findIndex(p => p.siteId === repId);
+    if(idx !== -1) {
+        db.payments[idx].amount = val;
+    }
+    saveDB();
+    
+    const ym = `${curDate.getFullYear()}-${String(curDate.getMonth()+1).padStart(2,'0')}`;
+    const monthSites = db.sites.filter(s => s.date.startsWith(ym));
+    const monthRepIds = [...new Set(monthSites.map(s=>s.name))].map(n => monthSites.find(s=>s.name===n).id);
+    
+    let total = 0;
+    db.payments.forEach(p => {
+         if(monthRepIds.includes(p.siteId)) total += Number(p.amount||0);
+    });
+    document.getElementById('payTotalDisplay').innerText = `$${total.toLocaleString()}`;
+}
+
+function toggleGroupPay(name, repId, checkbox) {
+    const isChecked = checkbox.checked;
+    if (!isChecked) {
+        if (!confirm("確定要取消「已請款」狀態嗎？")) {
+            checkbox.checked = true;
+            return;
         }
     }
-    renderDailyWorkerSelect(currentWorkers);
+
+    if(isChecked) {
+        const amount = db.savedPayAmts[repId] || '';
+        if(!db.payments.some(p => p.siteId === repId)) {
+            db.payments.push({ siteId: repId, date: new Date().toISOString(), amount: amount });
+        }
+    } else {
+        db.payments = db.payments.filter(p => p.siteId !== repId);
+    }
+    
+    saveDB(); openPaymentModal();
 }
 
-function renderDailyWorkerSelect(currentWorkers = []) {
-    const filter = document.getElementById('deWorkerFilter').value.toLowerCase();
-    const list = document.getElementById('deWorkerList');
+/* --- 案場編輯 --- */
+function openSiteModal(siteId) {
+    closeModal('modalQuickAdd');
+    openModal('modalSite');
+    
+    const s = siteId ? db.sites.find(x => x.id === siteId) : { id: '', name: '', colorIdx: 0, workers: [] };
+    
+    document.getElementById('sId').value = s.id;
+    document.getElementById('sDate').value = selectedDateStr;
+    document.getElementById('sName').value = s.name;
+    document.getElementById('btnDelSite').style.display = siteId ? 'block' : 'none';
+    
+    renderSiteColorBox(s.colorIdx);
+    renderSiteWorkerSelect(s.workers);
+}
+
+function renderSiteWorkerSelect(currentWorkers = []) {
+    const filter = document.getElementById('sWorkerFilter').value.toLowerCase();
+    const list = document.getElementById('sWorkerList');
     list.innerHTML = "";
-    
     const currentIds = currentWorkers.map(w => w.id);
-    const sortedWorkers = [...db.workers].sort((a,b) => (b.isTop?1:0)-(a.isTop?1:0));
     
-    sortedWorkers.forEach(w => {
-        if(w.isDisabled && !currentIds.includes(w.id)) return;
+    const ym = `${curDate.getFullYear()}-${String(curDate.getMonth()+1).padStart(2,'0')}`;
+    const workersWithStats = db.workers.map(w => {
+        const monthSites = db.sites.filter(s => s.date.startsWith(ym) && s.workers.some(sw => sw.id === w.id));
+        const workDays = new Set(monthSites.map(s => s.date)).size;
+        return { ...w, daysCount: workDays };
+    });
+    workersWithStats.sort((a,b) => {
+        if (a.isTop !== b.isTop) return (b.isTop?1:0) - (a.isTop?1:0);
+        if (a.isDisabled !== b.isDisabled) return (a.isDisabled?1:0) - (b.isDisabled?1:0);
+        return b.daysCount - a.daysCount;
+    });
+    workersWithStats.forEach(w => {
+        if (w.isDisabled && !currentIds.includes(w.id)) return;
+
         if(w.name.toLowerCase().includes(filter)) {
             const row = document.createElement('div');
             row.className = 'chk-row';
-            row.innerHTML = `<span>${w.name}</span> <input type="checkbox" value="${w.id}" ${currentIds.includes(w.id)?'checked':''}>`;
+            if(w.isDisabled) row.classList.add('disabled-row');
+            
+            const star = w.isTop ? '<svg class="icon-svg-sm" viewBox="0 0 24 24" style="fill:gold;color:gold;margin-right:2px;vertical-align:text-bottom"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>' : '';
+            const nameDisplay = w.isDisabled ? `${w.name} (隱藏)` : w.name;
+            
+            row.innerHTML = `<span>${star}${nameDisplay}</span> <input type="checkbox" value="${w.id}" ${currentIds.includes(w.id)?'checked':''}>`;
             list.appendChild(row);
         }
     });
 }
 
-function saveDailyWork() {
-    const id = document.getElementById('deId').value;
-    const date = document.getElementById('deDate').value;
-    const projectId = document.getElementById('deProjectSelect').value;
+function saveSite() {
+    const id = document.getElementById('sId').value;
+    const date = document.getElementById('sDate').value;
+    const name = document.getElementById('sName').value;
+    if(!name) return alert("請輸入名稱");
     
-    if(!projectId) return alert("請選擇案場 (若無選項請先至案場管理新增)");
-    
-    const chks = document.querySelectorAll('#deWorkerList input:checked');
+    const activeDot = document.querySelector('#sColorBox .active');
+    const colorIdx = activeDot ? parseInt(activeDot.dataset.idx) : 0;
+    const chks = document.querySelectorAll('#sWorkerList input:checked');
     const selectedIds = Array.from(chks).map(c => c.value);
     
+    const oldSite = id ? db.sites.find(s => s.id === id) : null;
     const newWorkers = selectedIds.map(wid => {
+        const exist = oldSite?.workers.find(w => w.id === wid);
+        if(exist) return exist; 
         const master = db.workers.find(w => w.id === wid);
         return { id: wid, snapshotRate: master ? (Number(master.rate)||0) : 0 };
     });
+    const data = { id: id || 's'+Date.now(), date, name, colorIdx, workers: newWorkers };
+    if(id) {
+        const idx = db.sites.findIndex(x => x.id === id);
+        db.sites[idx] = data;
+    } else db.sites.push(data);
+    
+    saveDB(); closeModal('modalSite'); renderCalendar();
+}
 
-    const projectDef = db.projects.find(p => p.id === projectId);
-    const record = {
-        id: id || 's' + Date.now(),
-        date: date,
-        projectId: projectId,
-        // 保留 name/colorIdx 供 fallback
-        name: projectDef ? projectDef.name : "Unknown",
-        colorIdx: projectDef ? projectDef.colorIdx : 0,
-        workers: newWorkers
-    };
+function delSite(id) {
+    if(!id) id = document.getElementById('sId').value;
+    if(confirm('確定刪除？')) {
+        db.sites = db.sites.filter(x => x.id !== id);
+        db.payments = db.payments.filter(p => p.siteId !== id);
+        saveDB(); closeModal(null); renderCalendar();
+    }
+}
+
+/* --- [Modified] 案場篩選 Modal (Multi-Select) --- */
+function openSiteSelect() {
+    const ym = `${curDate.getFullYear()}-${String(curDate.getMonth()+1).padStart(2,'0')}`;
+    const monthSites = db.sites.filter(s => s.date.startsWith(ym));
+    const uniqueMap = new Map();
+    monthSites.forEach(s => {
+        if(!uniqueMap.has(s.name)) {
+            uniqueMap.set(s.name, { name: s.name, colorIdx: s.colorIdx, ids: [] });
+        }
+        uniqueMap.get(s.name).ids.push(s.id);
+    });
+    
+    const list = document.getElementById('ssList');
+    list.innerHTML = "";
+    if(uniqueMap.size === 0) {
+        list.innerHTML = "<div style='text-align:center;color:var(--text-sub);padding:10px'>本月尚無案場</div>";
+    } else {
+        uniqueMap.forEach((val, name) => {
+            const div = document.createElement('div');
+            div.className = 'quick-site-row';
+            const c = THEMES[val.colorIdx||0].hex;
+            
+            // 檢查是否已在篩選清單中 (比對名稱)
+            // 由於 filterSiteIds 存的是 ID，但這裡是依名稱分組，只要該名稱對應的 ID 有在 filter 裡就算
+            const isChecked = filterSiteIds.length > 0 && val.ids.some(id => filterSiteIds.includes(id));
+
+            div.innerHTML = `
+                <div style="display:flex;align-items:center;">
+                    <div style="width:10px;height:10px;border-radius:50%;background:${c};margin-right:8px"></div>
+                    ${name}
+                </div>
+                <input type="checkbox" class="site-filter-chk" value="${val.ids.join(',')}" ${isChecked ? 'checked' : ''} style="width:20px;height:20px;accent-color:var(--primary);">
+            `;
+            // 點擊整行觸發 checkbox
+            div.onclick = (e) => {
+                if(e.target.type !== 'checkbox') {
+                    const chk = div.querySelector('input');
+                    chk.checked = !chk.checked;
+                }
+            };
+            list.appendChild(div);
+        });
+    }
+    openModal('modalSiteSelect');
+}
+
+function clearSiteFilter() {
+    filterSiteIds = [];
+    closeModal('modalSiteSelect');
+    renderWorkerList();
+}
+
+function saveSiteFilter() {
+    const chks = document.querySelectorAll('.site-filter-chk:checked');
+    filterSiteIds = [];
+    chks.forEach(chk => {
+        const ids = chk.value.split(',');
+        filterSiteIds.push(...ids);
+    });
+    closeModal('modalSiteSelect');
+    renderWorkerList();
+}
+
+function resetDateFilter() {
+    document.getElementById('wDateFilter').value = '';
+    updateDateDisplayText(); // 同步清空文字
+    renderWorkerList();
+}
+
+/* --- [Major Rewrite] 師傅與邏輯 (Intersection Logic) --- */
+function renderWorkerList() {
+    const wSearch = document.getElementById('wSearch').value.toLowerCase();
+    const dFilter = document.getElementById('wDateFilter').value;
+    document.getElementById('btnDateReset').style.display = dFilter ? 'block' : 'none';
+
+    const list = document.getElementById('workerList');
+    list.innerHTML = "";
+    
+    const ym = `${curDate.getFullYear()}-${String(curDate.getMonth()+1).padStart(2,'0')}`;
+    
+    // 1. 找出符合「日期篩選」與「案場篩選」的案場清單
+    let targetSites = db.sites.filter(s => s.date.startsWith(ym));
+
+    // A. 日期篩選
+    if (dFilter) {
+        targetSites = targetSites.filter(s => s.date === dFilter);
+    }
+
+    // B. 案場篩選 (若有選取案場，則只保留 ID 在 filterSiteIds 內的案場)
+    if (filterSiteIds.length > 0) {
+        targetSites = targetSites.filter(s => filterSiteIds.includes(s.id));
+    }
+    
+    // 建立一個 Set 儲存有效案場 ID，方便後續查詢
+    const validSiteIds = new Set(targetSites.map(s => s.id));
+
+    // 2. 計算每個師傅的數據
+    const allWorkersWithStats = db.workers.map(w => {
+        
+        // --- 邏輯 A: 決定哪些工資要算入 (Request 11) ---
+        // 規則：只計算「符合篩選條件」的案場工資
+        // 若完全沒篩選 (無日期、無案場)，則計算本月所有。
+        // 若有篩選，則只計算 targetSites 內的工資。
+        
+        // 找出該師傅參與且符合篩選條件的案場
+        const participatedValidSites = targetSites.filter(s => s.workers.some(sw => sw.id === w.id));
+        
+        // 計算工資
+        let activeWage = 0;
+        participatedValidSites.forEach(s => {
+            const sw = s.workers.find(x => x.id === w.id);
+            activeWage += Number(sw.snapshotRate || 0);
+        });
+
+        // 計算工天 (用於顯示 "X 天上工") - 這通常顯示本月總工天，還是篩選後的？
+        // 根據習慣，列表上的 "X 天上工" 通常指本月總計，但金額隨篩選變動。
+        // 但為了避免混淆，若有篩選，這裡顯示符合篩選的天數。
+        // 修正：還是保持顯示本月總天數較好，但金額變動。或者隨篩選變動？
+        // 根據 Request 11 的金額邏輯，工天顯示最好也一致。這裡設定為「符合篩選的天數」。
+        // 若無任何篩選，則 targetSites = 本月所有案場 -> 本月總天數。
+        const activeWorkDays = new Set(participatedValidSites.map(s => s.date)).size;
+
+        // --- 邏輯 B: 決定哪些雜費要算入 (Request 11) ---
+        // 規則：
+        // 1. 日期篩選: 該日期的雜費
+        // 2. 案場篩選: 該案場的雜費 (新雜費有 siteId)
+        // 3. 兩者皆有: 該日且該案場
+        // 4. 無篩選: 本月所有
+        
+        const workerExtras = db.extras.filter(e => e.wid === w.id && e.date.startsWith(ym));
+        
+        let validExtras = workerExtras.filter(e => {
+            // 條件 1: 日期
+            if (dFilter && e.date !== dFilter) return false;
+            
+            // 條件 2: 案場
+            // 如果有篩選案場，則雜費必須屬於該案場
+            // 注意：舊資料沒有 siteId，這會導致舊雜費在案場篩選時消失。
+            // 為了相容，若有案場篩選，只算 siteId 符合的。
+            if (filterSiteIds.length > 0) {
+                if (!e.siteId || !filterSiteIds.includes(e.siteId)) return false;
+            }
+            return true;
+        });
+
+        const activeExtraSum = validExtras.reduce((a,b) => a + Number(b.amount), 0);
+
+        // --- 邏輯 C: 標籤 (Request 2) ---
+        // 顯示該師傅在「目前篩選範圍內」參與的案場名稱
+        const tagNames = new Set();
+        // 只有在有案場篩選時才顯示特定案場標籤，或者總是顯示參與的案場？
+        // Request 2: "用A、B案場來搜尋師傅...顯示A、B案場名稱的標籤"
+        // 所以只顯示 filterSiteIds 內且該師傅有參與的。
+        if (filterSiteIds.length > 0) {
+             participatedValidSites.forEach(s => {
+                 // 找出該案場對應的原始設定以取得顏色 (需遍歷 db.sites 或建立 map)
+                 // 這裡簡單處理：直接用 s.name
+                 tagNames.add(s.name);
+             });
+        }
+
+        return {
+            ...w,
+            displayDays: activeWorkDays,
+            displayPay: activeWage + activeExtraSum,
+            tags: Array.from(tagNames),
+            // 判斷是否顯示該師傅：
+            // 如果有篩選條件 (日期或案場)，則該師傅必須有金額 (工資或雜費) 或有上工才顯示
+            // 若無篩選，則顯示所有非隱藏師傅
+            shouldShow: (dFilter || filterSiteIds.length > 0) ? (activeWage > 0 || activeExtraSum > 0 || activeWorkDays > 0) : true
+        };
+    });
+
+    // 計算總支出 (Request 12)
+    // 只加總列表上顯示的金額
+    let grandTotal = 0;
+    
+    // 排序
+    allWorkersWithStats.sort((a,b) => {
+        if (a.isTop !== b.isTop) return (b.isTop?1:0) - (a.isTop?1:0);
+        if (a.isDisabled !== b.isDisabled) return (a.isDisabled?1:0) - (b.isDisabled?1:0);
+        return b.displayDays - a.displayDays;
+    });
+
+    // 緩存過濾後的師傅 ID 給 Multi Extra 用
+    const filteredIds = [];
+
+    allWorkersWithStats.forEach(w => {
+        if(wSearch && !w.name.toLowerCase().includes(wSearch)) return;
+        if(!w.shouldShow) return;
+
+        filteredIds.push(w.id);
+        grandTotal += w.displayPay;
+
+        const card = document.createElement('div');
+        card.className = 'worker-card card';
+        if(w.isDisabled) card.classList.add('disabled');
+        card.style.padding = '15px';
+        
+        const star = w.isTop ? '<svg class="icon-svg-sm" viewBox="0 0 24 24" style="fill:gold;color:gold"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg> ' : '';
+        const nameText = w.isDisabled ? `${w.name} (隱藏)` : w.name;
+        
+        // 產生標籤 HTML
+        let tagsHtml = '';
+        w.tags.forEach(tagName => {
+            // 尋找顏色
+            const refSite = db.sites.find(s => s.name === tagName);
+            const color = refSite ? THEMES[refSite.colorIdx || 0].hex : '#888';
+            tagsHtml += `<span style="font-size:0.75rem; background:${color}; color:white; padding:2px 6px; border-radius:4px; margin-left:5px;">${tagName}</span>`;
+        });
+
+        card.innerHTML = `
+            <div><b>${star}${nameText}${tagsHtml}</b><div style="font-size:0.85rem;color:var(--text-sub);margin-top:4px">${w.displayDays} 天上工</div></div>
+            <div style="font-size:1.2rem;font-weight:800">$${w.displayPay.toLocaleString()}</div>
+        `;
+        card.onclick = () => openWorkerModal(w.id);
+        list.appendChild(card);
+    });
+
+    document.getElementById('totalExp').innerText = `$${grandTotal.toLocaleString()}`;
+    currentFilteredWorkerIds = filteredIds;
+}
+
+function updateDateDisplayText() {
+    const input = document.getElementById('wDateFilter');
+    const display = document.getElementById('dateDisplay');
+    if (input.value) {
+        display.innerText = input.value;
+        display.style.color = 'var(--text-main)'; 
+        display.style.fontWeight = 'normal';
+    } else {
+        display.innerText = '';
+    }
+}
+
+function openWorkerModal(id) {
+    editingExtraId = null;
+    document.getElementById('addExtraBox').style.display = 'none';
+    document.getElementById('btnAddExtraAction').innerText = "加入";
+    const w = id ?
+        db.workers.find(x => x.id === id) : { id:'', name:'', rate:'', isTop:false, phone:'', note:'', isDisabled: false };
+    document.getElementById('wId').value = w.id;
+    document.getElementById('wTop').checked = w.isTop;
+    document.getElementById('wName').value = w.name;
+    document.getElementById('wRate').value = w.rate;
+    document.getElementById('wPhone').value = w.phone;
+    document.getElementById('wNote').value = w.note;
+    const btnsDiv = document.getElementById('wActionBtns');
+    btnsDiv.style.display = id ? 'flex' : 'none';
+    
+    // 初始化新增雜費的日期與案場選單
+    const todayStr = new Date().toISOString().split('T')[0];
+    document.getElementById('exDate').value = todayStr;
+    updateExtraSiteSelect('exDate', 'exSite');
 
     if(id) {
-        const idx = db.sites.findIndex(s => s.id === id);
-        if(idx !== -1) db.sites[idx] = record;
+        document.getElementById('wStatsBlock').style.display = 'block';
+        document.getElementById('wExtraBlock').style.display = 'block';
+        const ym = `${curDate.getFullYear()}-${String(curDate.getMonth()+1).padStart(2,'0')}`;
+        const monthSites = db.sites.filter(s => s.date.startsWith(ym) && s.workers.some(sw => sw.id === w.id));
+        
+        let workPay = monthSites.reduce((acc, s) => acc + Number(s.workers.find(sw => sw.id === w.id).snapshotRate), 0);
+        const monthExtras = db.extras.filter(e => e.wid === w.id && e.date.startsWith(ym));
+        const extraSum = monthExtras.reduce((a,b) => a + Number(b.amount), 0);
+        
+        const workDays = new Set(monthSites.map(s => s.date)).size;
+
+        document.getElementById('wWorkDays').innerText = workDays;
+        document.getElementById('wWorkPay').innerText = workPay.toLocaleString();
+        document.getElementById('wExtraTotal').innerText = extraSum.toLocaleString();
+        document.getElementById('wFinalPay').innerText = (workPay + extraSum).toLocaleString();
+        
+        const exList = document.getElementById('wExtraList');
+        exList.innerHTML = "";
+        const grouped = {};
+        monthExtras.forEach(ex => {
+            if(!grouped[ex.name]) grouped[ex.name] = { count:0, total:0, name: ex.name };
+            grouped[ex.name].count++;
+            grouped[ex.name].total += parseInt(ex.amount);
+        });
+        Object.values(grouped).forEach(g => {
+             exList.innerHTML += `
+                <div style="display:flex;justify-content:space-between;font-size:0.9rem;margin-bottom:5px;align-items:center; border-bottom:1px dashed var(--border); padding:8px 0; cursor:pointer" onclick="openExtraDetail('${w.id}', '${g.name}')">
+                    <span>${g.name} <span style="font-size:0.8em;color:var(--text-sub)">(${g.count}筆)</span></span>
+                    <span>$${g.total} ></span>
+                </div>`;
+        });
+        
+        const btnHide = btnsDiv.children[0];
+        if(w.isDisabled) {
+            btnHide.innerText = "取消隱藏";
+            btnHide.className = "btn btn-unhide";
+        } else {
+            btnHide.innerText = "隱藏";
+            btnHide.className = "btn btn-hide";
+        }
+
     } else {
-        db.sites.push(record);
+        document.getElementById('wStatsBlock').style.display = 'none';
+        document.getElementById('wExtraBlock').style.display = 'none';
     }
+    openModal('modalWorker');
+}
+
+/* --- 個人上工日曆 --- */
+function openPersonalCalendar(wid) {
+    if(!wid) return;
+    const w = db.workers.find(x => x.id === wid);
+    if(!w) return;
     
-    saveDB();
-    closeModal('modalDailyEdit');
-    renderCalendar();
-    renderDayWorkList(date);
-}
-
-function delDailyWork(id) {
-    if(confirm('確定刪除此案場紀錄？')) {
-        db.sites = db.sites.filter(s => s.id !== id);
-        saveDB();
-        renderCalendar();
-        if(selectedDateStr) renderDayWorkList(selectedDateStr);
-    }
-}
-
-/* --- Client & Project Management Logic --- */
-function openPaymentModal() {
-    renderClientList();
-    openModal('modalPayment');
-}
-
-function toggleAddClient() {
-    const box = document.getElementById('addClientBox');
-    box.style.display = box.style.display === 'none' ? 'block' : 'none';
-    document.getElementById('newClientName').value = '';
-}
-
-function saveClient() {
-    const name = document.getElementById('newClientName').value;
-    if(!name) return alert('請輸入名稱');
-    db.clients.push({ id: 'c'+Date.now(), name: name });
-    saveDB();
-    toggleAddClient();
-    renderClientList();
-}
-
-function renderClientList() {
-    const list = document.getElementById('clientList');
-    list.innerHTML = "";
-    let grandTotal = 0;
-
-    // Render defined clients
-    db.clients.forEach(c => {
-        const clientTotal = getClientTotal(c.id);
-        grandTotal += clientTotal;
-
-        const div = document.createElement('div');
-        div.className = 'card';
-        div.style.cssText = "padding:12px; margin-bottom:8px; display:flex; justify-content:space-between; align-items:center; cursor:pointer;";
-        div.onclick = () => openClientDetail(c.id);
-        
-        div.innerHTML = `<b>${c.name}</b><span style="font-weight:bold">$${clientTotal.toLocaleString()} ></span>`;
-        list.appendChild(div);
-    });
-
-    // Handle legacy/uncategorized projects (Optional: could list them under "Uncategorized")
-    
-    document.getElementById('payTotalDisplay').innerText = `$${grandTotal.toLocaleString()}`;
-}
-
-function getClientTotal(clientId) {
-    const clientProjects = db.projects.filter(p => p.clientId === clientId);
-    let total = 0;
-    clientProjects.forEach(p => { total += getProjectTotal(p.id); });
-    return total;
-}
-
-function getProjectTotal(projectId) {
-    // 1. 工資 (該案場的所有紀錄)
-    const records = db.sites.filter(s => s.projectId === projectId);
-    let wageTotal = 0;
-    records.forEach(r => {
-        r.workers.forEach(w => wageTotal += Number(w.snapshotRate||0));
-    });
-
-    // 2. 雜費 (關聯到該案場紀錄的雜費)
-    // 找出這些紀錄的 ID
-    const recordIds = records.map(r => r.id);
-    // 找出 siteId 在這些 ID 裡的雜費
-    const extras = db.extras.filter(e => recordIds.includes(e.siteId));
-    let extraTotal = extras.reduce((sum, e) => sum + Number(e.amount), 0);
-
-    return wageTotal + extraTotal;
-}
-
-/* --- Client Detail Modal --- */
-function openClientDetail(clientId) {
-    const c = db.clients.find(x => x.id === clientId);
-    if(!c) return;
-    document.getElementById('clientDetailTitle').innerText = c.name;
-    document.getElementById('cdClientId').value = clientId;
-    renderClientProjectList(clientId);
-    openModal('modalClientDetail');
-}
-
-function renderClientProjectList(clientId) {
-    const list = document.getElementById('clientProjectList');
+    document.getElementById('pcTitle').innerText = `${curDate.getFullYear()}年${curDate.getMonth()+1}月 - ${w.name}`;
+    const list = document.getElementById('pcList');
     list.innerHTML = "";
     
-    const projects = db.projects.filter(p => p.clientId === clientId);
+    const ym = `${curDate.getFullYear()}-${String(curDate.getMonth()+1).padStart(2,'0')}`;
+    const daysInM = new Date(curDate.getFullYear(), curDate.getMonth()+1, 0).getDate();
+    const monthSites = db.sites.filter(s => s.date.startsWith(ym) && s.workers.some(sw => sw.id === wid));
+    const monthExtras = db.extras.filter(e => e.wid === wid && e.date.startsWith(ym));
     
-    projects.forEach(p => {
-        const total = getProjectTotal(p.id);
-        const c = (THEMES[p.colorIdx] || THEMES[0]).hex;
+    let hasData = false;
+    for(let d=1; d<=daysInM; d++) {
+        const dateStr = `${ym}-${String(d).padStart(2,'0')}`;
+        const daySites = monthSites.filter(s => s.date === dateStr);
+        const dayExtras = monthExtras.filter(e => e.date === dateStr);
+        if(daySites.length === 0 && dayExtras.length === 0) continue;
+        hasData = true;
         
-        const div = document.createElement('div');
-        div.className = 'project-row';
-        div.innerHTML = `
-            <div style="display:flex; align-items:center;">
-                <div style="width:10px; height:10px; border-radius:50%; background:${c}; margin-right:8px;"></div>
-                ${p.name}
-            </div>
-            <span>$${total.toLocaleString()}</span>
+        let contentHtml = "";
+        daySites.forEach(s => {
+            const sw = s.workers.find(x => x.id === wid);
+            contentHtml += `<div class="p-cal-site"><b>${s.name}</b> <span style="color:var(--text-sub)">($${sw.snapshotRate})</span></div>`;
+        });
+        dayExtras.forEach(e => {
+             contentHtml += `<div class="p-cal-extra">${e.name} $${e.amount}</div>`;
+        });
+        const row = document.createElement('div');
+        row.className = 'p-cal-row';
+        row.innerHTML = `
+            <div class="p-cal-date">${d}<span style="font-size:0.7em;font-weight:normal">日</span></div>
+            <div class="p-cal-content">${contentHtml}</div>
         `;
-        div.onclick = () => openProjectDefModal(p.id);
+        list.appendChild(row);
+    }
+    
+    if(!hasData) list.innerHTML = "<div style='text-align:center;padding:20px;color:var(--text-sub)'>本月無上工記錄</div>";
+    
+    openModal('modalPersonalCal');
+}
+
+/* --- 雜費細項列表 (Updated for Request 10) --- */
+function openExtraDetail(wid, extraName) {
+    const w = db.workers.find(x => x.id === wid);
+    document.getElementById('edTitle').innerText = `雜費細項: ${extraName}`;
+    
+    const ym = `${curDate.getFullYear()}-${String(curDate.getMonth()+1).padStart(2,'0')}`;
+    const items = db.extras.filter(e => e.wid === wid && e.date.startsWith(ym) && e.name === extraName);
+    
+    items.sort((a, b) => new Date(a.date) - new Date(b.date));
+
+    const list = document.getElementById('edList');
+    list.innerHTML = "";
+    
+    items.forEach(ex => {
+         // 查找案場名稱
+         const site = ex.siteId ? db.sites.find(s => s.id === ex.siteId) : null;
+         const siteName = site ? `<span style="font-size:0.8em; color:var(--primary); margin-left:5px;">(${site.name})</span>` : '';
+
+         list.innerHTML += `
+            <div style="display:flex;justify-content:space-between;font-size:0.9rem;margin-bottom:10px;align-items:center;border-bottom:1px solid var(--border);padding-bottom:5px">
+                <span style="cursor:pointer;flex:1" onclick="editExtraFromDetail('${ex.id}', '${wid}')">
+                    ${ex.date.slice(5)} ${siteName} <span style="font-size:0.8em;color:var(--text-sub); margin-left:5px">✎</span>
+                </span>
+                <span>$${ex.amount} <span style="color:var(--danger);cursor:pointer;margin-left:8px" onclick="delExtraFromDetail('${ex.id}','${wid}','${extraName}')">✕</span></span>
+            </div>`;
+    });
+    openModal('modalExtraDetail');
+}
+
+function editExtraFromDetail(eid, wid) {
+    closeModal('modalExtraDetail');
+    editExtra(eid);
+}
+
+function delExtraFromDetail(eid, wid, extraName) {
+    if(confirm('刪除？')) { 
+        db.extras = db.extras.filter(e => e.id !== eid);
+        saveDB();
+        const ym = `${curDate.getFullYear()}-${String(curDate.getMonth()+1).padStart(2,'0')}`;
+        const remaining = db.extras.filter(e => e.wid === wid && e.date.startsWith(ym) && e.name === extraName);
+        if(remaining.length === 0) {
+            closeModal('modalExtraDetail');
+            openWorkerModal(wid);
+        } else {
+            openExtraDetail(wid, extraName);
+        }
+    }
+}
+
+function saveWorker() {
+    const id = document.getElementById('wId').value;
+    const name = document.getElementById('wName').value;
+    
+    if(!name) return alert('請輸入姓名');
+
+    const data = {
+        name: name,
+        rate: document.getElementById('wRate').value,
+        isTop: document.getElementById('wTop').checked,
+        phone: document.getElementById('wPhone').value,
+        note: document.getElementById('wNote').value
+    };
+    if(id) {
+        const idx = db.workers.findIndex(x => x.id === id);
+        db.workers[idx] = { ...db.workers[idx], ...data };
+    } else {
+        db.workers.push({
+            id: 'w'+Date.now(),
+            ...data,
+            isDisabled: false
+        });
+    }
+    
+    saveDB();
+    closeModal('modalWorker'); renderWorkerList();
+}
+
+function toggleHideWorker() {
+    const id = document.getElementById('wId').value;
+    const w = db.workers.find(x => x.id === id);
+    if(w) {
+        w.isDisabled = !w.isDisabled;
+        if(w.isDisabled) {
+            w.isTop = false;
+        }
+        saveDB();
+        closeModal('modalWorker');
+        renderWorkerList();
+    }
+}
+
+function hardDeleteWorker() {
+    if(confirm('警告：確定刪除？這將會清除該師傅的所有歷史紀錄且無法復原！')) {
+        const id = document.getElementById('wId').value;
+        db.workers = db.workers.filter(x => x.id !== id);
+        db.sites.forEach(s => {
+            s.workers = s.workers.filter(sw => sw.id !== id);
+        });
+        db.extras = db.extras.filter(e => e.wid !== id);
+        saveDB();
+        closeModal('modalWorker');
+        renderWorkerList();
+    }
+}
+
+/* --- 雜費 & 多人雜費 (Site Select Helper) --- */
+function updateExtraSiteSelect(dateInputId, selectId) {
+    const dateVal = document.getElementById(dateInputId).value;
+    const select = document.getElementById(selectId);
+    if (!dateVal) {
+        select.innerHTML = '<option value="">(無案場)</option>';
+        return;
+    }
+    // 找出該日期的所有案場
+    const sites = db.sites.filter(s => s.date === dateVal);
+    
+    let html = '<option value="">(無案場)</option>';
+    sites.forEach(s => {
+        html += `<option value="${s.id}">${s.name}</option>`;
+    });
+    select.innerHTML = html;
+}
+
+function toggleAddExtra() {
+    const box = document.getElementById('addExtraBox');
+    const isHidden = box.style.display === 'none';
+    box.style.display = isHidden ? 'block' : 'none';
+    if(isHidden) {
+        editingExtraId = null;
+        document.getElementById('exDate').value = new Date().toISOString().split('T')[0];
+        updateExtraSiteSelect('exDate', 'exSite'); // 更新下拉
+        document.getElementById('exName').value = '';
+        document.getElementById('exAmt').value = '';
+        document.getElementById('btnAddExtraAction').innerText = "加入";
+    }
+}
+
+function editExtra(eid) {
+    const ex = db.extras.find(e => e.id === eid);
+    if(!ex) return;
+    document.getElementById('addExtraBox').style.display = 'block';
+    document.getElementById('exDate').value = ex.date;
+    updateExtraSiteSelect('exDate', 'exSite'); // 更新下拉
+    document.getElementById('exSite').value = ex.siteId || ""; // 填入案場
+    document.getElementById('exName').value = ex.name;
+    document.getElementById('exAmt').value = ex.amount;
+    editingExtraId = eid;
+    document.getElementById('btnAddExtraAction').innerText = "更新";
+}
+
+function saveOneExtra() {
+    const wid = document.getElementById('wId').value;
+    const date = document.getElementById('exDate').value;
+    const siteId = document.getElementById('exSite').value; // 取得案場ID
+    const name = document.getElementById('exName').value;
+    const amount = document.getElementById('exAmt').value;
+    if(!name || !amount) return alert('資料不完整');
+
+    // 尋找案場名稱 (Optionally stored, mainly for UI speed but ID is source of truth)
+    const siteName = siteId ? db.sites.find(s=>s.id === siteId)?.name : "";
+
+    if (editingExtraId) {
+        const idx = db.extras.findIndex(e => e.id === editingExtraId);
+        if(idx !== -1) db.extras[idx] = { ...db.extras[idx], date, siteId, siteName, name, amount };
+        editingExtraId = null;
+    } else {
+        db.extras.push({ id:'e'+Date.now(), wid, date, siteId, siteName, name, amount });
+    }
+    saveDB(); openWorkerModal(wid);
+}
+
+function delExtra(eid, wid) {
+    if(confirm('刪除？')) { db.extras = db.extras.filter(e => e.id !== eid);
+        saveDB(); openWorkerModal(wid); }
+}
+
+function openMultiExtra() {
+    const dStr = new Date().toISOString().split('T')[0];
+    document.getElementById('meDate').value = dStr;
+    updateExtraSiteSelect('meDate', 'meSite');
+    renderMeList();
+    openModal('modalMultiExtra');
+}
+
+function toggleAllMeCheckboxes() {
+    const chks = document.querySelectorAll('.me-chk');
+    if (chks.length === 0) return;
+    // 檢查是否已全選
+    const allChecked = Array.from(chks).every(c => c.checked);
+    chks.forEach(c => c.checked = !allChecked);
+}
+
+function renderMeList() {
+    const filter = document.getElementById('meFilter').value.toLowerCase();
+    const list = document.getElementById('meList');
+    list.innerHTML = "";
+    
+    // [Request 9] 使用 currentFilteredWorkerIds 進行連動
+    // 若主畫面有篩選，currentFilteredWorkerIds 不為 null，則只顯示這些人
+    // 若無篩選，則顯示所有人
+    
+    const ym = `${curDate.getFullYear()}-${String(curDate.getMonth()+1).padStart(2,'0')}`;
+    const workersWithStats = db.workers.map(w => {
+        const monthSites = db.sites.filter(s => s.date.startsWith(ym) && s.workers.some(sw => sw.id === w.id));
+        return { ...w, daysCount: monthSites.length };
+    });
+    
+    workersWithStats.sort((a,b) => {
+        if (a.isTop !== b.isTop) return (b.isTop?1:0) - (a.isTop?1:0);
+        if (a.isDisabled !== b.isDisabled) return (a.isDisabled?1:0) - (b.isDisabled?1:0);
+        return b.daysCount - a.daysCount;
+    });
+
+    workersWithStats.forEach(w => {
+        // Search Filter
+        if(filter && !w.name.toLowerCase().includes(filter)) return;
+        
+        // Main Screen Filter Linkage
+        // 如果 currentFilteredWorkerIds 存在，且該師傅不在其中，則跳過
+        // 但使用者可能希望在多人雜費時選到不在篩選內的人？
+        // 依據 Request 9: "聯動搜尋器"，所以應該隱藏
+        if (currentFilteredWorkerIds && !currentFilteredWorkerIds.includes(w.id)) return;
+
+        const div = document.createElement('div'); div.className = 'chk-row';
+        if(w.isDisabled) div.classList.add('disabled-row');
+        const nameDisplay = w.isDisabled ? `${w.name} (隱藏)` : w.name;
+        div.innerHTML = `<span>${nameDisplay}</span> <input type="checkbox" class="me-chk" value="${w.id}">`;
         list.appendChild(div);
     });
 }
 
-/* --- Project Definition Modal --- */
-function openProjectDefModal(projId) {
-    const clientId = document.getElementById('cdClientId').value;
-    const p = projId ? db.projects.find(x => x.id === projId) : { id:'', name:'', colorIdx:0 };
+function saveMultiExtra() {
+    const date = document.getElementById('meDate').value;
+    const siteId = document.getElementById('meSite').value;
+    const name = document.getElementById('meName').value;
+    const amt = document.getElementById('meAmt').value;
+    const chks = document.querySelectorAll('.me-chk:checked');
+    if(!name || !amt || chks.length === 0) return alert('資料不完整');
     
-    document.getElementById('pdId').value = p.id;
-    document.getElementById('pdName').value = p.name;
-    renderProjectColorBox(p.colorIdx);
-    
-    const modal = document.getElementById('modalProjectDef');
-    modal.style.display = 'flex';
-    setTimeout(() => modal.style.opacity = 1, 10);
+    const siteName = siteId ? db.sites.find(s=>s.id === siteId)?.name : "";
+
+    chks.forEach(c => db.extras.push({ id:'e'+Date.now()+Math.random(), wid: c.value, date, siteId, siteName, name, amount: amt }));
+    saveDB(); closeModal('modalMultiExtra'); renderWorkerList();
 }
 
-function renderProjectColorBox(selectedIdx) {
-    const box = document.getElementById('pdColorBox');
+/* --- 系統設定 --- */
+function renderThemeGrid() {
+    const box = document.getElementById('themeBox');
+    box.innerHTML = "";
+    THEMES.forEach((t, i) => {
+        const dot = document.createElement('div');
+        dot.className = `theme-dot ${db.settings.theme === i ? 'active' : ''}`;
+        dot.style.background = t.hex;
+        dot.onclick = () => { 
+            db.settings.theme = i; saveDB(); applyTheme(i); renderThemeGrid(); renderSiteColorBox(); 
+            if(document.getElementById('tab-cal').classList.contains('active')) switchPage('cal');
+        };
+        box.appendChild(dot);
+    });
+}
+function renderSiteColorBox(selectedIdx = 0) {
+    const box = document.getElementById('sColorBox');
     box.innerHTML = "";
     THEMES.forEach((t, i) => {
         const dot = document.createElement('div');
@@ -1165,136 +1586,24 @@ function renderProjectColorBox(selectedIdx) {
         box.appendChild(dot);
     });
 }
-
-function saveProjectDef() {
-    const id = document.getElementById('pdId').value;
-    const name = document.getElementById('pdName').value;
-    const clientId = document.getElementById('cdClientId').value;
-    const activeDot = document.querySelector('#pdColorBox .active');
-    const colorIdx = activeDot ? parseInt(activeDot.dataset.idx) : 0;
-
-    if(!name) return alert('請輸入案場名稱');
-
-    if(id) {
-        const idx = db.projects.findIndex(p => p.id === id);
-        if(idx !== -1) {
-            db.projects[idx].name = name;
-            db.projects[idx].colorIdx = colorIdx;
-        }
-    } else {
-        db.projects.push({
-            id: 'p'+Date.now(),
-            clientId: clientId,
-            name: name,
-            colorIdx: colorIdx
-        });
+function applyTheme(i) {
+    const t = THEMES[i] || THEMES[0];
+    const r = document.documentElement.style;
+    r.setProperty('--theme-r', t.r); r.setProperty('--theme-g', t.g);
+    r.setProperty('--theme-b', t.b);
+}
+function toggleGasLock() {
+    const isLocked = document.getElementById('gasLock').checked;
+    const inp = document.getElementById('gasUrl');
+    if(isLocked) { inp.style.background='var(--bg-std)'; inp.disabled=true;
     }
-    saveDB();
-    closeModal('modalProjectDef');
-    renderClientProjectList(clientId); 
-    renderCalendar(); 
+    else { if(db.settings.gasLock && !confirm('解除鎖定？')) { document.getElementById('gasLock').checked=true; return; } inp.style.background='var(--bg-card)'; inp.disabled=false;
+    }
+    db.settings.gasLock = isLocked; db.settings.gasUrl = inp.value; saveDB();
 }
-
-/* --- Extras Helper --- */
-function updateExtraSiteSelect(dateInputId, selectId) {
-    const dateVal = document.getElementById(dateInputId).value;
-    const select = document.getElementById(selectId);
-    if (!dateVal) { select.innerHTML = '<option value="">(無案場)</option>'; return; }
-    
-    const records = db.sites.filter(s => s.date === dateVal);
-    let html = '<option value="">(無案場)</option>';
-    records.forEach(r => {
-        const p = db.projects.find(pr => pr.id === r.projectId) || {name: r.name};
-        html += `<option value="${r.id}">${p.name}</option>`;
-    });
-    select.innerHTML = html;
-}
-
-/* --- Render Workers (Preserved logic with safety checks) --- */
-function renderWorkerList() {
-    const wSearch = document.getElementById('wSearch').value.toLowerCase();
-    const dFilter = document.getElementById('wDateFilter').value;
-    document.getElementById('btnDateReset').style.display = dFilter ? 'block' : 'none';
-    const list = document.getElementById('workerList');
-    list.innerHTML = "";
-    const ym = `${curDate.getFullYear()}-${String(curDate.getMonth()+1).padStart(2,'0')}`;
-    
-    let targetSites = db.sites.filter(s => s.date.startsWith(ym));
-    if (dFilter) targetSites = targetSites.filter(s => s.date === dFilter);
-    if (filterSiteIds.length > 0) targetSites = targetSites.filter(s => filterSiteIds.includes(s.id));
-    
-    const allWorkersWithStats = db.workers.map(w => {
-        const participatedValidSites = targetSites.filter(s => s.workers.some(sw => sw.id === w.id));
-        let activeWage = 0;
-        participatedValidSites.forEach(s => {
-            const sw = s.workers.find(x => x.id === w.id);
-            activeWage += Number(sw.snapshotRate || 0);
-        });
-        const activeWorkDays = new Set(participatedValidSites.map(s => s.date)).size;
-        
-        const workerExtras = db.extras.filter(e => e.wid === w.id && e.date.startsWith(ym));
-        let validExtras = workerExtras.filter(e => {
-            if (dFilter && e.date !== dFilter) return false;
-            if (filterSiteIds.length > 0) {
-                if (!e.siteId || !filterSiteIds.includes(e.siteId)) return false;
-            }
-            return true;
-        });
-        const activeExtraSum = validExtras.reduce((a,b) => a + Number(b.amount), 0);
-        
-        const tagNames = new Set();
-        if (filterSiteIds.length > 0) {
-             participatedValidSites.forEach(s => {
-                 let pname = s.name;
-                 if(s.projectId) {
-                     const p = db.projects.find(pr => pr.id === s.projectId);
-                     if(p) pname = p.name;
-                 }
-                 tagNames.add(pname);
-             });
-        }
-        return {
-            ...w, displayDays: activeWorkDays, displayPay: activeWage + activeExtraSum, tags: Array.from(tagNames),
-            shouldShow: (dFilter || filterSiteIds.length > 0) ? (activeWage > 0 || activeExtraSum > 0 || activeWorkDays > 0) : true
-        };
-    });
-    
-    let grandTotal = 0;
-    allWorkersWithStats.sort((a,b) => {
-        if (a.isTop !== b.isTop) return (b.isTop?1:0) - (a.isTop?1:0);
-        if (a.isDisabled !== b.isDisabled) return (a.isDisabled?1:0) - (b.isDisabled?1:0);
-        return b.displayDays - a.displayDays;
-    });
-    
-    const filteredIds = [];
-    allWorkersWithStats.forEach(w => {
-        if(wSearch && !w.name.toLowerCase().includes(wSearch)) return;
-        if(!w.shouldShow) return;
-        filteredIds.push(w.id);
-        grandTotal += w.displayPay;
-        
-        const card = document.createElement('div');
-        card.className = 'worker-card card';
-        if(w.isDisabled) card.classList.add('disabled');
-        card.style.padding = '15px';
-        const star = w.isTop ? '<svg class="icon-svg-sm" viewBox="0 0 24 24" style="fill:gold;color:gold"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg> ' : '';
-        const nameText = w.isDisabled ? `${w.name} (隱藏)` : w.name;
-        
-        let tagsHtml = '';
-        w.tags.forEach(tagName => {
-            const refSite = db.sites.find(s => s.name === tagName || (s.projectId && db.projects.find(p=>p.id===s.projectId)?.name === tagName));
-            let colorIdx = refSite ? (refSite.projectId ? (db.projects.find(p=>p.id===refSite.projectId)?.colorIdx||0) : (refSite.colorIdx||0)) : 0;
-            const color = (THEMES[colorIdx] || THEMES[0]).hex;
-            tagsHtml += `<span style="font-size:0.75rem; background:${color}; color:white; padding:2px 6px; border-radius:4px; margin-left:5px;">${tagName}</span>`;
-        });
-        
-        card.innerHTML = `<div><b>${star}${nameText}${tagsHtml}</b><div style="font-size:0.85rem;color:var(--text-sub);margin-top:4px">${w.displayDays} 天上工</div></div><div style="font-size:1.2rem;font-weight:800">$${w.displayPay.toLocaleString()}</div>`;
-        card.onclick = () => openWorkerModal(w.id);
-        list.appendChild(card);
-    });
-    
-    document.getElementById('totalExp').innerText = `$${grandTotal.toLocaleString()}`;
-    currentFilteredWorkerIds = filteredIds;
+function masterReset() {
+    if(confirm('警告：清除所有資料？')) { localStorage.removeItem('ENG_LEDGER_FINAL_V7');
+    location.reload(); }
 }
 
 /* --- Modal Helper --- */
