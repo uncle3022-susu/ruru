@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <title>工程帳本 Ultimate Final v8.0</title>
+    <title>工程帳本 Ultimate v8.1 Fixed</title>
     <style>
         /* --- 1. 核心變數 --- */
         :root {
@@ -47,7 +47,6 @@
         .day-num { font-size: 1rem; font-weight: 500; margin-bottom: 3px; width: 26px; height: 26px; display: flex; align-items: center; justify-content: center; border-radius: 50%; z-index: 2; flex-shrink: 0; }
         .day-cell.today .day-num { background: #E0E0E0; color: #333; font-weight: bold; } 
         .is-weekend { color: var(--danger); }
-        /* 日曆上的案場色點 (觀賞用，不可點) */
         .site-tag { width: 95%; max-width: 100%; font-size: 10px; padding: 3px 6px; border-radius: 8px; color: white; margin-bottom: 1.5px; text-align: center; font-weight: bold; line-height: 1.2; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; pointer-events: none; }
 
         /* Dashboard */
@@ -93,16 +92,15 @@
         .quick-site-row { display: flex; justify-content: space-between; align-items: center; background: var(--bg-card); border: 1px solid var(--border); border-radius: 12px; padding: 12px; margin-bottom: 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.03); cursor: pointer; transition: background 0.1s; }
         .quick-site-row:active { background: var(--bg-std); }
 
-        /* Settings & Nav */
         .theme-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 8px; margin: 15px 0; justify-items: center; }
         .theme-dot { width: 100%; aspect-ratio: 1; border-radius: 50%; cursor: pointer; border: 3px solid transparent; transition: transform 0.2s; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
         .theme-dot.active { transform: scale(1.15); border-color: var(--text-main); }
+        
         .bottom-nav { position: fixed; bottom: 0; width: 100%; height: calc(70px + var(--safe-bottom)); background: var(--bg-card); border-top: 1px solid var(--border); display: flex; justify-content: space-around; padding-bottom: var(--safe-bottom); z-index: 100; }
         .nav-item { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; color: var(--text-sub); font-size: 10px; transition: color 0.2s; }
         .nav-item.active { color: var(--primary); font-weight: bold; }
         .nav-item svg { width: 26px; height: 26px; margin-bottom: 4px; fill: currentColor; }
         
-        /* Icons */
         .icon-svg { width: 20px; height: 20px; stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
         .icon-svg-sm { width: 16px; height: 16px; stroke: currentColor; fill: none; stroke-width: 2; }
         
@@ -111,7 +109,6 @@
         .chk-row.disabled-row { color: var(--text-disabled); }
         .fab-btn { position: fixed; bottom: calc(85px + var(--safe-bottom)); right: 20px; width: 56px; height: 56px; border-radius: 50%; background: #263238; color: white; border: none; box-shadow: 0 6px 20px rgba(0,0,0,0.25); display: flex; align-items: center; justify-content: center; z-index: 90; }
 
-        /* Detail Rows */
         .p-cal-row { display: flex; gap: 10px; padding: 10px 0; border-bottom: 1px solid var(--border); }
         .p-cal-date { width: 50px; font-weight: bold; text-align: center; display: flex; flex-direction: column; align-items: center; }
         .p-cal-content { flex: 1; font-size: 0.9rem; }
@@ -120,7 +117,6 @@
 
         .modal-sticky-footer { position: sticky; bottom: -1px; background: var(--bg-card); padding: 15px 0 5px 0; border-top: 1px solid var(--border); margin-top: auto; }
         
-        /* 新增樣式: 專案列表行 */
         .project-row { background: var(--bg-std); margin: 5px 0; padding: 12px; border-radius: 12px; display: flex; justify-content: space-between; align-items: center; cursor: pointer; transition: background 0.1s; }
         .project-row:active { background: #EEE; }
     </style>
@@ -452,14 +448,21 @@
         </div>
     </div>
 
+    <div id="modalQuickAdd" class="overlay">
+        <div class="modal-box">
+            <div class="modal-header"><div class="modal-close" onclick="closeModal('modalQuickAdd')">X</div></div>
+            <div class="modal-content-scroll">Old function call detected.</div>
+        </div>
+    </div>
+
 <script>
 const THEMES = [{r:86,g:158,b:138,hex:'#569E8A'},{r:234,g:193,b:80,hex:'#EAC150'},{r:90,g:179,b:194,hex:'#5AB3C2'},{r:240,g:141,b:166,hex:'#F08DA6'},{r:157,g:131,b:180,hex:'#9D83B4'},{r:224,g:112,b:111,hex:'#E0706F'},{r:106,g:133,b:209,hex:'#6A85D1'}];
 
 let db = {
     workers: [], 
-    clients: [], 
-    projects: [], 
-    sites: [], 
+    clients: [], // [New] { id, name }
+    projects: [], // [New] { id, clientId, name, colorIdx }
+    sites: [], // Now acts as Daily Work Record: { id, date, projectId, workers: [] }
     extras: [], 
     payments: [], 
     paymentMeta: {}, 
@@ -837,6 +840,7 @@ function renderClientList() {
     list.innerHTML = "";
     let grandTotal = 0;
 
+    // Render defined clients
     db.clients.forEach(c => {
         const clientTotal = getClientTotal(c.id);
         grandTotal += clientTotal;
@@ -849,6 +853,8 @@ function renderClientList() {
         div.innerHTML = `<b>${c.name}</b><span style="font-weight:bold">$${clientTotal.toLocaleString()} ></span>`;
         list.appendChild(div);
     });
+
+    // Handle legacy/uncategorized projects (Optional: could list them under "Uncategorized")
     
     document.getElementById('payTotalDisplay').innerText = `$${grandTotal.toLocaleString()}`;
 }
@@ -861,17 +867,15 @@ function getClientTotal(clientId) {
 }
 
 function getProjectTotal(projectId) {
-    // 1. 工資 (該案場的所有紀錄)
+    // Wages
     const records = db.sites.filter(s => s.projectId === projectId);
     let wageTotal = 0;
     records.forEach(r => {
         r.workers.forEach(w => wageTotal += Number(w.snapshotRate||0));
     });
 
-    // 2. 雜費 (關聯到該案場紀錄的雜費)
-    // 找出這些紀錄的 ID
+    // Extras (Linked via siteId)
     const recordIds = records.map(r => r.id);
-    // 找出 siteId 在這些 ID 裡的雜費
     const extras = db.extras.filter(e => recordIds.includes(e.siteId));
     let extraTotal = extras.reduce((sum, e) => sum + Number(e.amount), 0);
 
@@ -907,7 +911,6 @@ function renderClientProjectList(clientId) {
             </div>
             <span>$${total.toLocaleString()}</span>
         `;
-        // 點擊編輯案場
         div.onclick = () => openProjectDefModal(p.id);
         list.appendChild(div);
     });
@@ -969,7 +972,7 @@ function saveProjectDef() {
     saveDB();
     closeModal('modalProjectDef');
     renderClientProjectList(clientId); 
-    renderCalendar(); // 顏色更新
+    renderCalendar(); 
 }
 
 /* --- Extras Helper --- */
@@ -981,14 +984,13 @@ function updateExtraSiteSelect(dateInputId, selectId) {
     const records = db.sites.filter(s => s.date === dateVal);
     let html = '<option value="">(無案場)</option>';
     records.forEach(r => {
-        // 嘗試從 projects 找名字，找不到就用紀錄的名字
         const p = db.projects.find(pr => pr.id === r.projectId) || {name: r.name};
         html += `<option value="${r.id}">${p.name}</option>`;
     });
     select.innerHTML = html;
 }
 
-/* --- Render Workers --- */
+/* --- Render Workers (Preserved logic with safety checks) --- */
 function renderWorkerList() {
     const wSearch = document.getElementById('wSearch').value.toLowerCase();
     const dFilter = document.getElementById('wDateFilter').value;
