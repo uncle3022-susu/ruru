@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <title>工程帳本 v8.3 (Fresh Start)</title>
+    <title>工程帳本 v8.4 (Full Restore)</title>
     <style>
         /* --- 1. 核心變數 --- */
         :root {
@@ -211,7 +211,7 @@
                     <h3 style="margin:0">雲端資料庫</h3>
                 </div>
                 <div class="chk-row" style="padding-top:5px; opacity:0.5; pointer-events:none;">
-                    <span style="display:flex;align-items:center;gap:5px"><svg class="icon-svg-sm" viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg> 鎖定網址 (已停用)</span>
+                    <span style="display:flex;align-items:center;gap:5px"><svg class="icon-svg-sm" viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg> 鎖定網址 (離線模式)</span>
                     <input type="checkbox" id="gasLock" checked disabled>
                 </div>
                 <input id="gasUrl" class="input-f" placeholder="Google Apps Script URL" disabled>
@@ -790,7 +790,6 @@ function renderWorkerList() {
     
     let targetSites = db.sites.filter(s => s.date.startsWith(ym));
     if(dFilter) targetSites = targetSites.filter(s => s.date === dFilter);
-    // Filter by Project (using filterSiteIds var name for compatibility but it holds Project IDs)
     if(filterProjectIds.length > 0) targetSites = targetSites.filter(s => filterProjectIds.includes(s.projectId));
     
     let grandTotal = 0;
@@ -807,7 +806,6 @@ function renderWorkerList() {
         const wExtras = db.extras.filter(e => e.wid === w.id && e.date.startsWith(ym));
         let validEx = wExtras.filter(e => {
             if(dFilter && e.date !== dFilter) return false;
-            // Check Project association via siteId
             if(filterProjectIds.length > 0) {
                const linkedSite = db.sites.find(s => s.id === e.siteId);
                if(!linkedSite || !filterProjectIds.includes(linkedSite.projectId)) return false;
@@ -851,7 +849,6 @@ function renderWorkerList() {
 function openSiteSelect() {
     const list = document.getElementById('ssList');
     list.innerHTML = "";
-    // List Defined Projects
     if(!db.projects || db.projects.length === 0) list.innerHTML = "<div style='text-align:center;padding:10px'>無案場</div>";
     else {
         db.projects.forEach(p => {
@@ -878,7 +875,7 @@ function updateDateDisplayText() {
     document.getElementById('dateDisplay').innerText = v ? v : '點擊篩選日期...';
 }
 
-/* --- Worker & Extras (Simplified) --- */
+/* --- Worker & Extras --- */
 function openWorkerModal(id) {
     const w = id ? db.workers.find(x => x.id === id) : {id:'', name:'', rate:''};
     document.getElementById('wId').value = w.id || '';
@@ -888,7 +885,6 @@ function openWorkerModal(id) {
     document.getElementById('wPhone').value = w.phone || '';
     document.getElementById('wNote').value = w.note || '';
     
-    // Stats
     if(id) {
         document.getElementById('wStatsBlock').style.display='block';
         document.getElementById('wExtraBlock').style.display='block';
@@ -904,14 +900,13 @@ function openWorkerModal(id) {
         document.getElementById('wExtraTotal').innerText = exTotal.toLocaleString();
         document.getElementById('wFinalPay').innerText = (wage+exTotal).toLocaleString();
         
-        // Extras List
         const list = document.getElementById('wExtraList'); list.innerHTML = "";
         extras.forEach(e => {
             list.innerHTML += `<div style="padding:8px;border-bottom:1px dashed #eee;display:flex;justify-content:space-between"><span>${e.name}</span><span>$${e.amount}</span></div>`;
         });
         
         document.getElementById('exDate').value = new Date().toISOString().split('T')[0];
-        updateExtraSiteSelect();
+        updateExtraSiteSelect('exDate', 'exSite');
     } else {
         document.getElementById('wStatsBlock').style.display='none';
         document.getElementById('wExtraBlock').style.display='none';
@@ -937,9 +932,9 @@ function saveWorker() {
     }
     saveDB(); closeModal('modalWorker'); renderWorkerList();
 }
-function updateExtraSiteSelect() {
-    const d = document.getElementById('exDate').value;
-    const s = document.getElementById('exSite');
+function updateExtraSiteSelect(did, sid) {
+    const d = document.getElementById(did).value;
+    const s = document.getElementById(sid);
     if(!d) { s.innerHTML = "<option>(無)</option>"; return; }
     const recs = db.sites.filter(x => x.date === d);
     let h = "<option value=''>(無案場)</option>";
@@ -960,10 +955,88 @@ function saveOneExtra() {
     saveDB(); openWorkerModal(wid);
 }
 
-// Basic Theme/Modal/Nav
+function openMultiExtra() {
+    const dStr = new Date().toISOString().split('T')[0];
+    document.getElementById('meDate').value = dStr;
+    updateExtraSiteSelect('meDate', 'meSite');
+    renderMeList();
+    openModal('modalMultiExtra');
+}
+function toggleAllMeCheckboxes() {
+    const chks = document.querySelectorAll('.me-chk');
+    if (chks.length === 0) return;
+    const allChecked = Array.from(chks).every(c => c.checked);
+    chks.forEach(c => c.checked = !allChecked);
+}
+function renderMeList() {
+    const filter = document.getElementById('meFilter').value.toLowerCase();
+    const list = document.getElementById('meList');
+    list.innerHTML = "";
+    const ym = `${curDate.getFullYear()}-${String(curDate.getMonth()+1).padStart(2,'0')}`;
+    const workers = db.workers.map(w => {
+        const mSites = db.sites.filter(s => s.date.startsWith(ym) && s.workers.some(sw => sw.id === w.id));
+        return { ...w, days: mSites.length };
+    });
+    workers.sort((a,b) => b.days - a.days);
+    workers.forEach(w => {
+        if(filter && !w.name.toLowerCase().includes(filter)) return;
+        const div = document.createElement('div'); div.className = 'chk-row';
+        div.innerHTML = `<span>${w.name}</span> <input type="checkbox" class="me-chk" value="${w.id}">`;
+        list.appendChild(div);
+    });
+}
+function saveMultiExtra() {
+    const date = document.getElementById('meDate').value;
+    const siteId = document.getElementById('meSite').value;
+    const name = document.getElementById('meName').value;
+    const amt = document.getElementById('meAmt').value;
+    const chks = document.querySelectorAll('.me-chk:checked');
+    if(!name || !amt || chks.length === 0) return alert('資料不完整');
+    chks.forEach(c => db.extras.push({ id:'e'+Date.now()+Math.random(), wid: c.value, date, siteId, name, amount: amt }));
+    saveDB(); closeModal('modalMultiExtra'); renderWorkerList();
+}
+
+/* --- Personal Calendar --- */
+function openPersonalCalendar(wid) {
+    if(!wid) return;
+    const w = db.workers.find(x => x.id === wid);
+    if(!w) return;
+    document.getElementById('pcTitle').innerText = `${curDate.getFullYear()}年${curDate.getMonth()+1}月 - ${w.name}`;
+    const list = document.getElementById('pcList');
+    list.innerHTML = "";
+    const ym = `${curDate.getFullYear()}-${String(curDate.getMonth()+1).padStart(2,'0')}`;
+    const daysInM = new Date(curDate.getFullYear(), curDate.getMonth()+1, 0).getDate();
+    const mSites = db.sites.filter(s => s.date.startsWith(ym) && s.workers.some(sw => sw.id === wid));
+    const mExtras = db.extras.filter(e => e.wid === wid && e.date.startsWith(ym));
+    
+    for(let d=1; d<=daysInM; d++) {
+        const dateStr = `${ym}-${String(d).padStart(2,'0')}`;
+        const dSites = mSites.filter(s => s.date === dateStr);
+        const dExtras = mExtras.filter(e => e.date === dateStr);
+        if(dSites.length===0 && dExtras.length===0) continue;
+        
+        let html = "";
+        dSites.forEach(s => {
+            const p = (db.projects||[]).find(x => x.id === s.projectId);
+            const sw = s.workers.find(x => x.id === wid);
+            html += `<div class="p-cal-site"><b>${p?p.name:'未命名'}</b> <span style="color:#888">($${sw.snapshotRate})</span></div>`;
+        });
+        dExtras.forEach(e => html += `<div class="p-cal-extra">${e.name} $${e.amount}</div>`);
+        
+        const row = document.createElement('div');
+        row.className = 'p-cal-row';
+        row.innerHTML = `<div class="p-cal-date">${d}日</div><div class="p-cal-content">${html}</div>`;
+        list.appendChild(row);
+    }
+    openModal('modalPersonalCal');
+}
+
+/* --- Core / UI Helpers --- */
 function switchPage(pid) {
     document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
     document.getElementById('tab-'+pid).classList.add('active');
+    document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+    document.getElementById('nav-'+pid).classList.add('active');
     if(pid==='cal') renderCalendar();
     if(pid==='work') renderWorkerList();
     if(pid==='set') renderThemeGrid();
@@ -975,8 +1048,67 @@ function toggleDarkMode(f){
     isDark ? document.body.setAttribute('data-mode','dark') : document.body.removeAttribute('data-mode');
     db.settings.darkMode=isDark; if(typeof f!=='boolean') saveDB();
 }
-function renderPickerWheels(){/* Simplified */}
-function initGestures(){/* Simplified */}
+function renderThemeGrid() {
+    const box = document.getElementById('themeBox');
+    box.innerHTML = "";
+    THEMES.forEach((t, i) => {
+        const dot = document.createElement('div');
+        dot.className = `theme-dot ${db.settings.theme === i ? 'active' : ''}`;
+        dot.style.background = t.hex;
+        dot.onclick = () => { 
+            db.settings.theme = i; saveDB(); applyTheme(i); renderThemeGrid(); renderCalendar();
+        };
+        box.appendChild(dot);
+    });
+}
+function applyTheme(i) {
+    const t = THEMES[i] || THEMES[0];
+    const r = document.documentElement.style;
+    r.setProperty('--theme-r', t.r); r.setProperty('--theme-g', t.g);
+    r.setProperty('--theme-b', t.b);
+}
+function renderPickerWheels(){
+    const wy=document.getElementById('wheelY'), wm=document.getElementById('wheelM');
+    if(wy.children.length>0)return;
+    for(let i=2020;i<=2035;i++){const d=document.createElement('div');d.className='picker-item';d.innerText=i+'年';d.dataset.val=i;wy.appendChild(d);}
+    for(let i=1;i<=12;i++){const d=document.createElement('div');d.className='picker-item';d.innerText=i+'月';d.dataset.val=i;wm.appendChild(d);}
+    [wy,wm].forEach(el=>el.addEventListener('scroll', updatePickerFocus));
+}
+function updatePickerFocus(e){
+    const el=e.target, center=el.scrollTop+110; let min=Infinity, closest=null;
+    el.querySelectorAll('.picker-item').forEach(it=>{
+        const diff=Math.abs(center-(it.offsetTop+it.offsetHeight/2));
+        if(diff<min){min=diff;closest=it;}
+    });
+    el.querySelectorAll('.picker-item').forEach(it=>it.classList.remove('active'));
+    if(closest)closest.classList.add('active');
+}
+function openDatePicker(){
+    document.getElementById('modalDatePicker').style.transform='translateY(0)';
+    document.getElementById('pickerOverlay').style.display='flex';
+    setTimeout(()=>document.getElementById('pickerOverlay').style.opacity=1,10);
+}
+function closePicker(){
+    document.getElementById('modalDatePicker').style.transform='translateY(100%)';
+    document.getElementById('pickerOverlay').style.opacity=0;
+    setTimeout(()=>document.getElementById('pickerOverlay').style.display='none',200);
+}
+function confirmDate(){
+    const yEl=document.querySelector('#wheelY .active'), mEl=document.querySelector('#wheelM .active');
+    if(yEl && mEl) {
+        curDate.setFullYear(parseInt(yEl.dataset.val));
+        curDate.setMonth(parseInt(mEl.dataset.val)-1);
+        updateHeaderDate(); renderCalendar(); renderWorkerList();
+    }
+    closePicker();
+}
+function initGestures(){
+    const cal = document.getElementById('calWrapper');
+    let sX=0;
+    cal.addEventListener('touchstart',e=>sX=e.touches[0].clientX,{passive:true});
+    cal.addEventListener('touchend',e=>{if(Math.abs(e.changedTouches[0].clientX-sX)>50)changeMonth(e.changedTouches[0].clientX-sX>0?-1:1)});
+}
+function changeMonth(dir){ curDate.setMonth(curDate.getMonth()+dir); updateHeaderDate(); renderCalendar(); }
 </script>
 </body>
 </html>
