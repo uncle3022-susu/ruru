@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <title>工程帳本 v8.4 (Full Restore)</title>
+    <title>工程帳本 Ultimate v8.5</title>
     <style>
         /* --- 1. 核心變數 --- */
         :root {
@@ -67,6 +67,7 @@
         .btn-hide { background: linear-gradient(135deg, #FF9999, #FF6B6B); box-shadow: 0 4px 12px rgba(255, 107, 107, 0.3); }
         .btn-unhide { background: linear-gradient(135deg, #78909C, #546E7A); box-shadow: 0 4px 12px rgba(84, 110, 122, 0.3); }
         .btn-ghost { background: var(--bg-std); color: var(--text-sub); box-shadow: none; border: 1px solid var(--border); }
+        .btn-sm { width: auto; padding: 8px 16px; font-size: 14px; margin-top: 0; }
         
         .input-f { width: 100%; padding: 14px; border: 1px solid var(--border); border-radius: 12px; font-size: 16px; margin-bottom: 12px; background: var(--bg-std); color: var(--text-main); outline: none; }
         .input-f:focus { border-color: var(--primary); background: var(--bg-card); }
@@ -246,6 +247,21 @@
         </div>
     </nav>
 
+    <div id="pickerOverlay" class="overlay" onclick="closePicker()">
+        <div id="modalDatePicker" class="picker-container" onclick="event.stopPropagation()">
+            <div class="picker-actions">
+                <span style="color:var(--text-sub); cursor:pointer;" onclick="closePicker()">取消</span>
+                <span style="color:var(--text-sub); font-weight:400">選擇月份</span>
+                <span style="color:var(--primary); cursor:pointer;" onclick="confirmDate()">確定</span>
+            </div>
+            <div class="picker-body">
+                <div class="picker-highlight"></div>
+                <div id="wheelY" class="picker-col"></div>
+                <div id="wheelM" class="picker-col"></div>
+            </div>
+        </div>
+    </div>
+    
     <div id="modalDailyEdit" class="overlay" style="z-index:2200;">
         <div class="modal-box">
             <div class="modal-header">
@@ -313,6 +329,12 @@
                 <h3 id="clientDetailTitle">案主詳情</h3>
                 <input id="cdClientId" type="hidden">
                 <button class="btn" style="margin-bottom:15px;" onclick="openProjectDefModal()">+ 新增案場</button>
+                
+                <div style="display:flex; gap:10px; margin-bottom:15px;">
+                    <button class="btn btn-unhide btn-sm" onclick="editClientName()">編輯案主</button>
+                    <button class="btn btn-danger btn-sm" onclick="deleteClient()">刪除案主</button>
+                </div>
+
                 <div id="clientProjectList"></div>
             </div>
         </div>
@@ -331,6 +353,7 @@
                 <input id="pdName" class="input-f" placeholder="案場名稱">
                 <div id="pdColorBox" class="theme-grid" style="margin-bottom:15px"></div>
                 <button class="btn" onclick="saveProjectDef()">儲存</button>
+                <button id="btnDelProj" class="btn btn-danger" style="margin-top:10px; display:none;" onclick="deleteProject()">刪除案場</button>
             </div>
         </div>
     </div>
@@ -373,7 +396,7 @@
                         <button class="btn-ghost" style="padding:4px 8px; font-size:12px; margin:0;" onclick="toggleAddExtra()">+ 新增</button>
                     </div>
                     <div id="addExtraBox" style="display:none; background:rgba(var(--theme-r),var(--theme-g),var(--theme-b),0.1); padding:10px; border-radius:8px; margin-bottom:10px;">
-                        <input id="exDate" type="date" class="input-f" style="margin-bottom:5px">
+                        <input id="exDate" type="date" class="input-f" style="margin-bottom:5px" onchange="updateExtraSiteSelect('exDate', 'exSite')">
                         <select id="exSite" class="input-f" style="margin-bottom:5px"></select>
                         <input id="exName" list="extraTypes" class="input-f" placeholder="項目 (可選或輸入)" style="margin-bottom:5px">
                         <input id="exAmt" type="number" class="input-f" placeholder="金額" style="margin-bottom:5px">
@@ -426,7 +449,7 @@
             <div class="modal-header"><div class="modal-close" onclick="closeModal('modalMultiExtra')"><svg class="icon-svg" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg></div></div>
             <div class="modal-content-scroll">
                 <h3>多人添加雜費</h3>
-                <input id="meDate" type="date" class="input-f">
+                <input id="meDate" type="date" class="input-f" onchange="updateExtraSiteSelect('meDate', 'meSite')">
                 <select id="meSite" class="input-f" style="margin-bottom:12px"></select>
                 <input id="meName" list="extraTypes" class="input-f" placeholder="項目 (可選或輸入)">
                 <input id="meAmt" type="number" class="input-f" placeholder="金額">
@@ -464,7 +487,7 @@ let filterProjectIds = []; // v8 uses Projects for filtering, not Sites
 let currentFilteredWorkerIds = null;
 
 // [SAFE MODE] New LocalStorage Key to avoid conflicts
-const STORAGE_KEY = 'ENG_LEDGER_V8_FRESH';
+const STORAGE_KEY = 'ENG_LEDGER_V8_FRESH_FINAL';
 
 window.onload = async () => {
     try {
@@ -728,6 +751,30 @@ function openClientDetail(cid) {
     renderClientProjectList(cid);
     openModal('modalClientDetail');
 }
+function editClientName() {
+    const cid = document.getElementById('cdClientId').value;
+    const c = db.clients.find(x => x.id === cid);
+    if(!c) return;
+    const newName = prompt("請輸入新的案主名稱：", c.name);
+    if(newName && newName !== c.name) {
+        c.name = newName; saveDB();
+        document.getElementById('clientDetailTitle').innerText = newName;
+        renderClientList();
+    }
+}
+function deleteClient() {
+    const cid = document.getElementById('cdClientId').value;
+    if(confirm("警告：確定刪除此案主？這將會一併刪除該案主旗下的所有案場！")) {
+        // Remove projects
+        db.projects = db.projects.filter(p => p.clientId !== cid);
+        // Remove client
+        db.clients = db.clients.filter(c => c.id !== cid);
+        saveDB();
+        closeModal('modalClientDetail');
+        renderClientList();
+    }
+}
+
 function renderClientProjectList(cid) {
     const list = document.getElementById('clientProjectList');
     list.innerHTML = "";
@@ -746,9 +793,21 @@ function openProjectDefModal(pid) {
     const p = pid ? db.projects.find(x => x.id === pid) : {id:'', name:'', colorIdx:0};
     document.getElementById('pdId').value = p.id;
     document.getElementById('pdName').value = p.name;
+    document.getElementById('btnDelProj').style.display = pid ? 'block' : 'none';
     renderProjectColorBox(p.colorIdx);
     const m = document.getElementById('modalProjectDef');
     m.style.display = 'flex'; setTimeout(()=>m.style.opacity=1,10);
+}
+function deleteProject() {
+    const pid = document.getElementById('pdId').value;
+    if(!pid) return;
+    if(confirm("確定刪除此案場？")) {
+        db.projects = db.projects.filter(p => p.id !== pid);
+        saveDB();
+        closeModal('modalProjectDef');
+        const cid = document.getElementById('cdClientId').value;
+        renderClientProjectList(cid); renderCalendar();
+    }
 }
 function renderProjectColorBox(idx) {
     const box = document.getElementById('pdColorBox');
@@ -806,6 +865,7 @@ function renderWorkerList() {
         const wExtras = db.extras.filter(e => e.wid === w.id && e.date.startsWith(ym));
         let validEx = wExtras.filter(e => {
             if(dFilter && e.date !== dFilter) return false;
+            // Check Project association via siteId
             if(filterProjectIds.length > 0) {
                const linkedSite = db.sites.find(s => s.id === e.siteId);
                if(!linkedSite || !filterProjectIds.includes(linkedSite.projectId)) return false;
@@ -824,21 +884,27 @@ function renderWorkerList() {
         return { ...w, pay: wage+exTotal, days, tags: Array.from(tags), show: (dFilter||filterProjectIds.length>0)?(wage>0||exTotal>0||days>0):true };
     });
     
-    workers.sort((a,b) => b.days - a.days);
+    workers.sort((a,b) => {
+        if (a.isTop !== b.isTop) return (b.isTop?1:0) - (a.isTop?1:0);
+        return b.days - a.days;
+    });
     
     workers.forEach(w => {
         if(search && !w.name.toLowerCase().includes(search)) return;
-        if(!w.show) return;
+        if(w.isDisabled && !w.show) return; // Hide unless filtered
+        if(!w.show && !w.isDisabled) return;
+
         grandTotal += w.pay;
         
         const card = document.createElement('div');
         card.className = `worker-card card ${w.isDisabled?'disabled':''}`;
         card.style.padding = '15px';
         const star = w.isTop ? '<span style="color:gold">★</span> ' : '';
+        const nameDisplay = w.isDisabled ? `${w.name} (隱藏)` : w.name;
         let tagsHtml = '';
         w.tags.forEach(t => tagsHtml += `<span style="font-size:0.75rem;background:#888;color:white;padding:2px 6px;border-radius:4px;margin-left:5px">${t}</span>`);
         
-        card.innerHTML = `<div><b>${star}${w.name}${tagsHtml}</b><div style="font-size:0.85rem;color:var(--text-sub);margin-top:4px">${w.days} 天上工</div></div><div style="font-size:1.2rem;font-weight:800">$${w.pay.toLocaleString()}</div>`;
+        card.innerHTML = `<div><b>${star}${nameDisplay}${tagsHtml}</b><div style="font-size:0.85rem;color:var(--text-sub);margin-top:4px">${w.days} 天上工</div></div><div style="font-size:1.2rem;font-weight:800">$${w.pay.toLocaleString()}</div>`;
         card.onclick = () => openWorkerModal(w.id);
         list.appendChild(card);
     });
@@ -877,6 +943,10 @@ function updateDateDisplayText() {
 
 /* --- Worker & Extras --- */
 function openWorkerModal(id) {
+    editingExtraId = null;
+    document.getElementById('addExtraBox').style.display = 'none';
+    document.getElementById('btnAddExtraAction').innerText = "加入";
+    
     const w = id ? db.workers.find(x => x.id === id) : {id:'', name:'', rate:''};
     document.getElementById('wId').value = w.id || '';
     document.getElementById('wName').value = w.name || '';
@@ -884,6 +954,10 @@ function openWorkerModal(id) {
     document.getElementById('wTop').checked = w.isTop || false;
     document.getElementById('wPhone').value = w.phone || '';
     document.getElementById('wNote').value = w.note || '';
+    
+    // Buttons
+    const btnsDiv = document.getElementById('wActionBtns');
+    btnsDiv.style.display = id ? 'flex' : 'none';
     
     if(id) {
         document.getElementById('wStatsBlock').style.display='block';
@@ -906,7 +980,18 @@ function openWorkerModal(id) {
         });
         
         document.getElementById('exDate').value = new Date().toISOString().split('T')[0];
-        updateExtraSiteSelect('exDate', 'exSite');
+        updateExtraSiteSelect('exDate', 'exSite'); // Correctly call with IDs
+        
+        // Button Logic
+        const btnHide = btnsDiv.children[0];
+        if(w.isDisabled) {
+            btnHide.innerText = "取消隱藏";
+            btnHide.className = "btn btn-unhide";
+        } else {
+            btnHide.innerText = "隱藏";
+            btnHide.className = "btn btn-hide";
+        }
+        
     } else {
         document.getElementById('wStatsBlock').style.display='none';
         document.getElementById('wExtraBlock').style.display='none';
@@ -928,21 +1013,46 @@ function saveWorker() {
         const idx = db.workers.findIndex(x => x.id === id);
         db.workers[idx] = { ...db.workers[idx], ...w };
     } else {
-        db.workers.push({ id:'w'+Date.now(), ...w });
+        db.workers.push({ id:'w'+Date.now(), ...w, isDisabled: false });
     }
     saveDB(); closeModal('modalWorker'); renderWorkerList();
 }
-function updateExtraSiteSelect(did, sid) {
-    const d = document.getElementById(did).value;
-    const s = document.getElementById(sid);
-    if(!d) { s.innerHTML = "<option>(無)</option>"; return; }
-    const recs = db.sites.filter(x => x.date === d);
-    let h = "<option value=''>(無案場)</option>";
-    recs.forEach(r => {
+function toggleHideWorker() {
+    const id = document.getElementById('wId').value;
+    const w = db.workers.find(x => x.id === id);
+    if(w) {
+        w.isDisabled = !w.isDisabled;
+        if(w.isDisabled) w.isTop = false;
+        saveDB(); closeModal('modalWorker'); renderWorkerList();
+    }
+}
+function hardDeleteWorker() {
+    if(confirm('警告：確定刪除？這將會清除該師傅的所有歷史紀錄且無法復原！')) {
+        const id = document.getElementById('wId').value;
+        db.workers = db.workers.filter(x => x.id !== id);
+        db.sites.forEach(s => { s.workers = s.workers.filter(sw => sw.id !== id); });
+        db.extras = db.extras.filter(e => e.wid !== id);
+        saveDB(); closeModal('modalWorker'); renderWorkerList();
+    }
+}
+
+function updateExtraSiteSelect(dateInputId, selectId) {
+    const dateVal = document.getElementById(dateInputId).value;
+    const select = document.getElementById(selectId);
+    if (!dateVal) { select.innerHTML = '<option value="">(無)</option>'; return; }
+    
+    // Find daily records for this date
+    const records = db.sites.filter(s => s.date === dateVal);
+    let html = '<option value="">(無案場)</option>';
+    records.forEach(r => {
         const p = (db.projects||[]).find(x => x.id === r.projectId);
-        h += `<option value="${r.id}">${p ? p.name : '未命名'}</option>`;
+        html += `<option value="${r.id}">${p ? p.name : '未命名'}</option>`;
     });
-    s.innerHTML = h;
+    select.innerHTML = html;
+}
+function toggleAddExtra() {
+    const box = document.getElementById('addExtraBox');
+    box.style.display = box.style.display==='none'?'block':'none';
 }
 function saveOneExtra() {
     const wid = document.getElementById('wId').value;
@@ -980,6 +1090,7 @@ function renderMeList() {
     workers.sort((a,b) => b.days - a.days);
     workers.forEach(w => {
         if(filter && !w.name.toLowerCase().includes(filter)) return;
+        if(w.isDisabled) return; 
         const div = document.createElement('div'); div.className = 'chk-row';
         div.innerHTML = `<span>${w.name}</span> <input type="checkbox" class="me-chk" value="${w.id}">`;
         list.appendChild(div);
@@ -1040,6 +1151,16 @@ function switchPage(pid) {
     if(pid==='cal') renderCalendar();
     if(pid==='work') renderWorkerList();
     if(pid==='set') renderThemeGrid();
+    
+    // Apply Background
+    const t = THEMES[db.settings.theme];
+    if(pid === 'cal') {
+        const themeRgba = `rgba(${t.r},${t.g},${t.b},0.4)`;
+        const baseColor = db.settings.darkMode ? '#000000' : '#FFFFFF';
+        document.body.style.background = `linear-gradient(${themeRgba}, ${themeRgba}), ${baseColor}`;
+    } else {
+        document.body.style.background = 'var(--bg-std)';
+    }
 }
 function openModal(id){ document.getElementById(id).style.display='flex'; setTimeout(()=>document.getElementById(id).style.opacity=1,10); }
 function closeModal(id){ document.getElementById(id).style.opacity=0; setTimeout(()=>document.getElementById(id).style.display='none',200); }
@@ -1047,6 +1168,7 @@ function toggleDarkMode(f){
     const isDark = typeof f==='boolean'?f:!document.body.hasAttribute('data-mode');
     isDark ? document.body.setAttribute('data-mode','dark') : document.body.removeAttribute('data-mode');
     db.settings.darkMode=isDark; if(typeof f!=='boolean') saveDB();
+    if(document.getElementById('tab-cal').classList.contains('active')) switchPage('cal');
 }
 function renderThemeGrid() {
     const box = document.getElementById('themeBox');
@@ -1056,7 +1178,8 @@ function renderThemeGrid() {
         dot.className = `theme-dot ${db.settings.theme === i ? 'active' : ''}`;
         dot.style.background = t.hex;
         dot.onclick = () => { 
-            db.settings.theme = i; saveDB(); applyTheme(i); renderThemeGrid(); renderCalendar();
+            db.settings.theme = i; saveDB(); applyTheme(i); renderThemeGrid(); 
+            if(document.getElementById('tab-cal').classList.contains('active')) switchPage('cal');
         };
         box.appendChild(dot);
     });
@@ -1087,6 +1210,14 @@ function openDatePicker(){
     document.getElementById('modalDatePicker').style.transform='translateY(0)';
     document.getElementById('pickerOverlay').style.display='flex';
     setTimeout(()=>document.getElementById('pickerOverlay').style.opacity=1,10);
+    // Scroll to current
+    const wy=document.getElementById('wheelY'), wm=document.getElementById('wheelM');
+    setTimeout(()=>{
+        const yItem=[...wy.children].find(c=>c.dataset.val==curDate.getFullYear());
+        const mItem=[...wm.children].find(c=>c.dataset.val==curDate.getMonth()+1);
+        if(yItem) wy.scrollTop = yItem.offsetTop - 90;
+        if(mItem) wm.scrollTop = mItem.offsetTop - 90;
+    },100);
 }
 function closePicker(){
     document.getElementById('modalDatePicker').style.transform='translateY(100%)';
