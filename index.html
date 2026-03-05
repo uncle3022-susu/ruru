@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <title>工程帳本 Ultimate v8.15</title>
+    <title>工程帳本 Ultimate v8.14</title>
     <style>
         /* --- 1. 核心變數 --- */
         :root {
@@ -658,13 +658,12 @@ function openQuickAdd(dateStr) {
     if(listEl) listEl.scrollIntoView({ behavior: 'smooth' });
 }
 
-// [V8.10] 絕對可靠的日曆切換與重置
 function handleDailyDateChange(val) {
     if(val) {
         curDate = new Date(val);
         selectedDateStr = val;
     } else {
-        // 使用者在原生選單按了「清除」或點擊右側重置鍵：直接跳回今天
+        // [原廠設定] 如果原生的選擇器被清除了，跳回今天
         const today = new Date();
         curDate = today;
         const y = today.getFullYear();
@@ -676,6 +675,24 @@ function handleDailyDateChange(val) {
     renderCalendar();
     openQuickAdd(selectedDateStr);
 }
+
+// [V8.13 獨立重置功能] 專門給 X 按鈕呼叫，不干擾原生選擇器
+window.resetDailyDate = function(e) {
+    if (e) {
+        e.preventDefault();
+        e.stopPropagation();
+    }
+    const today = new Date();
+    curDate = today;
+    const y = today.getFullYear();
+    const m = String(today.getMonth() + 1).padStart(2, '0');
+    const d = String(today.getDate()).padStart(2, '0');
+    selectedDateStr = `${y}-${m}-${d}`;
+    
+    updateHeaderDate();
+    renderCalendar();
+    openQuickAdd(selectedDateStr);
+};
 
 window.toggleAccordion = function(accId, btnId) {
     const acc = document.getElementById(accId);
@@ -698,13 +715,14 @@ function renderDayWorkList(dateStr) {
     const today = new Date();
     const todayStrLocal = `${today.getFullYear()}-${String(today.getMonth()+1).padStart(2,'0')}-${String(today.getDate()).padStart(2,'0')}`;
     const isNotToday = dateStr !== todayStrLocal;
-    
-    // [V8.12] 恢復 v8.6 小日曆觸及點設計 (透明100%覆蓋)，加上安全的 Button X鍵
+
+    // [V8.13] 完美結合：左邊是 100% v8.6 的觸控大按鈕，右邊是獨立的 button 重置鍵
     const btnRow = document.createElement('div');
     btnRow.style.cssText = "display:flex; gap:10px; margin-bottom:15px; align-items:center;";
     btnRow.innerHTML = `
         <button class="btn" style="margin-top:0; flex:1;" onclick="openDailyWorkModal(null, '${dateStr}')">+ 新增本日案場</button>
         <div style="display:flex; align-items:center;">
+            
             <div style="position:relative; width:50px; height:48px;">
                 <div class="btn-ghost" style="width:100%; height:100%; border-radius:14px; margin-top:0; display:flex; justify-content:center; align-items:center; border:1px solid var(--border);">
                     <svg class="icon-svg" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
@@ -712,9 +730,10 @@ function renderDayWorkList(dateStr) {
                 <input type="date" value="${dateStr}" onchange="handleDailyDateChange(this.value)" style="position:absolute; top:0; left:0; width:100%; height:100%; opacity:0; z-index:10; cursor:pointer;">
             </div>
             
-            <button type="button" onclick="handleDailyDateChange('')" style="display:${isNotToday ? 'flex' : 'none'}; width:40px; height:48px; background:transparent; border:none; margin-left:5px; align-items:center; justify-content:center; cursor:pointer; color:var(--text-sub); outline:none;">
-                <svg class="icon-svg-sm" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+            <button type="button" onclick="resetDailyDate(event)" style="display:${isNotToday ? 'flex' : 'none'}; width:40px; height:48px; padding:0; background:transparent; border:none; margin-left:5px; cursor:pointer; color:var(--text-sub); align-items:center; justify-content:center; outline:none; -webkit-tap-highlight-color: transparent;">
+                <svg class="icon-svg-sm" style="width:20px; height:20px;" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
             </button>
+            
         </div>
     `;
     container.appendChild(btnRow);
@@ -1073,7 +1092,6 @@ function saveSiteFilter() {
 }
 function clearSiteFilter() { filterProjectIds = []; closeModal('modalSiteSelect'); renderWorkerList(); }
 
-// [V8.12 絕對不動] 師傅名單的日期篩選器字體控制
 function resetDateFilter() { 
     document.getElementById('wDateFilter').value = ''; 
     updateDateDisplayText(); 
@@ -1361,7 +1379,6 @@ function switchPage(pid) {
     document.getElementById('nav-'+pid).classList.add('active');
     
     if(pid==='cal') {
-        // [V8.12] 自動回到今天
         const today = new Date();
         curDate = today;
         const y = today.getFullYear();
@@ -1371,7 +1388,6 @@ function switchPage(pid) {
         updateHeaderDate();
         renderCalendar();
         
-        // [V8.12] 確保背景色完美套用透明度 0.4
         const t = THEMES[db.settings.theme] || THEMES[0];
         const themeRgba = `rgba(${t.r},${t.g},${t.b},0.4)`; 
         const baseColor = db.settings.darkMode ? '#121212' : '#F8F9FA';
