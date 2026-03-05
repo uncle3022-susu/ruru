@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <title>工程帳本 Ultimate v8.7</title>
+    <title>工程帳本 Ultimate v8.8</title>
     <style>
         /* --- 1. 核心變數 --- */
         :root {
@@ -24,7 +24,7 @@
             --border: #333333; --shadow: 0 4px 15px rgba(0,0,0,0.3);
         }
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; user-select: none; font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", Roboto, sans-serif; }
-        body { margin: 0; background-color: var(--bg-std); color: var(--text-main); padding-bottom: calc(90px + var(--safe-bottom)); overflow-x: hidden; transition: background-color 0.3s ease, background-image 0.3s ease, color 0.3s ease; }
+        body { margin: 0; background: var(--bg-std); color: var(--text-main); padding-bottom: calc(90px + var(--safe-bottom)); overflow-x: hidden; transition: background 0.3s ease, color 0.3s ease; }
 
         /* --- UI Components --- */
         .app-header { position: sticky; top: 0; z-index: 50; background: rgba(var(--bg-card-rgb, 255,255,255), 0.8); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); padding: 10px 20px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid var(--border); }
@@ -46,7 +46,7 @@
         .day-cell { min-height: 85px; height: auto; border-radius: 10px; padding: 2px; margin-bottom: 4px; display: flex; flex-direction: column; align-items: center; border: 1px solid transparent; cursor: pointer; position: relative; overflow: hidden; }
         .day-num { font-size: 1rem; font-weight: 500; margin-bottom: 3px; width: 26px; height: 26px; display: flex; align-items: center; justify-content: center; border-radius: 50%; z-index: 2; flex-shrink: 0; }
         
-        /* [V8.7] 跟隨點擊日期的反灰效果 */
+        /* 點擊日期的反灰效果 */
         .day-cell.selected .day-num { background: #E0E0E0; color: #333; font-weight: bold; } 
         .is-weekend { color: var(--danger); }
         
@@ -70,6 +70,7 @@
         .btn-hide { background: linear-gradient(135deg, #FF9999, #FF6B6B); box-shadow: 0 4px 12px rgba(255, 107, 107, 0.3); }
         .btn-unhide { background: linear-gradient(135deg, #78909C, #546E7A); box-shadow: 0 4px 12px rgba(84, 110, 122, 0.3); }
         .btn-ghost { background: var(--bg-std); color: var(--text-sub); box-shadow: none; border: 1px solid var(--border); }
+        .btn-sm { width: auto; padding: 8px 16px; font-size: 14px; margin-top: 0; }
         
         .input-f { width: 100%; padding: 14px; border: 1px solid var(--border); border-radius: 12px; font-size: 16px; margin-bottom: 12px; background: var(--bg-std); color: var(--text-main); outline: none; }
         .input-f:focus { border-color: var(--primary); background: var(--bg-card); }
@@ -123,7 +124,7 @@
         .project-row { background: var(--bg-std); margin: 5px 0; padding: 12px; border-radius: 12px; display: flex; justify-content: space-between; align-items: center; cursor: pointer; transition: background 0.1s; }
         .project-row:active { background: #EEE; }
 
-        /* [V8.7] 滑順展開的收納視窗 */
+        /* 折疊師傅名單 */
         .workers-accordion {
             max-height: 1.2em; 
             line-height: 1.2;
@@ -132,9 +133,6 @@
             color: var(--text-sub); 
             transition: max-height 0.3s ease-in-out; 
             margin-top: 4px; 
-        }
-        .workers-accordion.expanded {
-            /* max-height 由 JS 動態寫入 */
         }
     </style>
 </head>
@@ -191,13 +189,13 @@
                 </div>
                 
                 <div style="border-top:1px solid var(--border); padding-top:10px; margin-top:10px;">
-                    <div style="display:flex; align-items:center; height:50px; position:relative;">
+                    <div style="display:flex; align-items:center; height:50px; position:relative; cursor:pointer;" onclick="const d = document.getElementById('wDateFilter'); if(d.showPicker) d.showPicker();">
                         <svg class="icon-svg" style="color:var(--text-sub); margin-right:10px;" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
-                        <div id="dateDisplay" style="flex:1; text-align:center; font-size:16px; color:var(--text-main); font-weight:bold; height:100%; display:flex; align-items:center; justify-content:center;"></div>
+                        <div id="dateDisplay" style="flex:1; text-align:center; font-size:16px; color:var(--text-main); font-weight:normal; height:100%; display:flex; align-items:center; justify-content:center;"></div>
                         <input type="date" id="wDateFilter" 
-                               style="position:absolute; top:0; left:0; width:100%; height:100%; opacity:0; z-index:10;" 
+                               style="position:absolute; top:0; left:0; width:100%; height:100%; opacity:0; z-index:10; cursor:pointer;" 
                                onchange="updateDateDisplayText(); renderWorkerList()">
-                        <div id="btnDateReset" onclick="resetDateFilter()" style="display:none; padding:5px; cursor:pointer; color:var(--text-sub); z-index:20; margin-left:5px;">
+                        <div id="btnDateReset" onclick="event.stopPropagation(); resetDateFilter()" style="display:none; padding:5px; cursor:pointer; color:var(--text-sub); z-index:20; margin-left:5px; position:relative;">
                             <svg class="icon-svg-sm" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
                         </div>
                     </div>
@@ -344,13 +342,13 @@
             <div class="modal-content-scroll">
                 <h3 id="clientDetailTitle" style="margin-bottom: 10px;">案主詳情</h3>
                 <input id="cdClientId" type="hidden">
-                
                 <button class="btn" style="margin-bottom:15px;" onclick="openProjectDefModal()">+ 新增案場</button>
+                
                 <div id="clientProjectList" style="margin-bottom:15px;"></div>
                 
                 <div style="display:flex; gap:10px;">
-                    <button class="btn btn-unhide" style="margin-top:0" onclick="editClientName()">編輯案主</button>
-                    <button class="btn btn-danger" style="margin-top:0" onclick="deleteClient()">刪除案主</button>
+                    <button class="btn btn-unhide btn-sm" onclick="editClientName()">編輯案主</button>
+                    <button class="btn btn-danger btn-sm" onclick="deleteClient()">刪除案主</button>
                 </div>
             </div>
         </div>
@@ -499,7 +497,7 @@ let selectedDateStr = "";
 let filterProjectIds = []; 
 let currentFilteredWorkerIds = null;
 
-// [V8.7] 恢復舊資料 Key，讓舊有紀錄直接升級無縫銜接
+// 恢復讀取原本的資料 Key
 const STORAGE_KEY = 'ENG_LEDGER_FINAL_V7';
 
 window.onload = async () => {
@@ -507,7 +505,6 @@ window.onload = async () => {
         const local = localStorage.getItem(STORAGE_KEY);
         if(local) db = JSON.parse(local);
         
-        // --- 自動升級結構防呆 ---
         if(!db.clients) db.clients = [];
         if(!db.projects) db.projects = [];
         if(!db.savedPayAmts) db.savedPayAmts = {};
@@ -532,7 +529,7 @@ window.onload = async () => {
         switchPage('cal'); 
         initGestures(); 
         
-        // [V8.7] 恢復雲端功能
+        // 恢復雲端功能
         if(db.settings.gasUrl) {
             document.getElementById('gasUrl').value = db.settings.gasUrl;
             document.getElementById('gasLock').checked = db.settings.gasLock;
@@ -547,7 +544,7 @@ window.onload = async () => {
 
 function saveDB() {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(db));
-    syncCloud(false);
+    syncCloud(false); 
 }
 
 async function syncCloud(isPull) {
@@ -610,7 +607,7 @@ function renderCalendar() {
     const daysInM = new Date(y, m+1, 0).getDate();
     const today = new Date();
     
-    // [V8.7 Request III-5] 預設今天為反灰目標，若有選中日期則改為該日期
+    // 計算反灰圓圈目標 (如果有選定日期就用選定的，沒有就用今天)
     const todayStrLocal = `${today.getFullYear()}-${String(today.getMonth()+1).padStart(2,'0')}-${String(today.getDate()).padStart(2,'0')}`;
     const targetHighlightStr = selectedDateStr || todayStrLocal;
 
@@ -620,6 +617,7 @@ function renderCalendar() {
         cell.className = 'day-cell';
         const dateStr = `${y}-${String(m+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
         
+        // 賦予反灰 selected 樣式
         if (dateStr === targetHighlightStr) cell.classList.add('selected');
         
         let tagsHtml = '';
@@ -647,31 +645,31 @@ function renderCalendar() {
 
 function openQuickAdd(dateStr) {
     selectedDateStr = dateStr;
-    renderCalendar(); // [V8.7] 重新渲染以移動反灰圈
+    renderCalendar(); 
     renderDayWorkList(dateStr);
     const listEl = document.getElementById('calendarDayList');
     if(listEl) listEl.scrollIntoView({ behavior: 'smooth' });
 }
 
-// [V8.7 Request III-6] 處理日曆捷徑變更
+// 處理日曆捷徑變更
 function handleDailyDateChange(val) {
     if(val) {
         curDate = new Date(val);
         selectedDateStr = val;
+        updateHeaderDate();
+        renderCalendar();
+        openQuickAdd(selectedDateStr);
     } else {
-        // 重置為今天
+        // [修正] 原本日曆重置按鈕會清空，這裡確實回到未選擇狀態並回到今天
+        selectedDateStr = "";
         curDate = new Date();
-        const y = curDate.getFullYear();
-        const m = String(curDate.getMonth()+1).padStart(2,'0');
-        const d = String(curDate.getDate()).padStart(2,'0');
-        selectedDateStr = `${y}-${m}-${d}`;
+        updateHeaderDate();
+        renderCalendar();
+        document.getElementById('calendarDayList').innerHTML = "";
     }
-    updateHeaderDate();
-    renderCalendar();
-    openQuickAdd(selectedDateStr);
 }
 
-// [V8.7 Request III-3] 展開動畫 JS
+// 展開動畫 JS
 window.toggleAccordion = function(accId, btnId) {
     const acc = document.getElementById(accId);
     const btn = document.getElementById(btnId);
@@ -690,16 +688,16 @@ function renderDayWorkList(dateStr) {
     const container = document.getElementById('calendarDayList');
     container.innerHTML = "";
     
-    // [V8.7 Request III-6] 並排的小日曆捷徑與重置
+    // 並排的小日曆捷徑與重置
     const btnRow = document.createElement('div');
     btnRow.style.cssText = "display:flex; gap:10px; margin-bottom:15px;";
     btnRow.innerHTML = `
         <button class="btn" style="margin-top:0; flex:1;" onclick="openDailyWorkModal(null, '${dateStr}')">+ 新增本日案場</button>
-        <div style="position:relative; width:50px;">
-            <button class="btn-ghost" style="width:100%; height:100%; border-radius:14px; margin-top:0; display:flex; justify-content:center; align-items:center;">
+        <div style="position:relative; width:50px; cursor:pointer;" onclick="const d = this.querySelector('input'); if(d.showPicker) d.showPicker();">
+            <button class="btn-ghost" style="width:100%; height:100%; border-radius:14px; margin-top:0; display:flex; justify-content:center; align-items:center; pointer-events:none;">
                 <svg class="icon-svg" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
             </button>
-            <input type="date" value="${dateStr}" onchange="handleDailyDateChange(this.value)" style="position:absolute; top:0; left:0; width:100%; height:100%; opacity:0; z-index:10;">
+            <input type="date" value="${dateStr}" onchange="handleDailyDateChange(this.value)" style="position:absolute; top:0; left:0; width:100%; height:100%; opacity:0; z-index:10; cursor:pointer;">
         </div>
     `;
     container.appendChild(btnRow);
@@ -713,7 +711,6 @@ function renderDayWorkList(dateStr) {
         } else if (r.colorIdx !== undefined) colorIdx = r.colorIdx;
         const c = (THEMES[colorIdx] || THEMES[0]).hex;
         
-        // [V8.7 Request III-8] 師傅名單與 V 鍵
         const workerNames = r.workers.map(w => {
             const wData = db.workers.find(x => x.id === w.id);
             return wData ? wData.name : '未知';
@@ -726,24 +723,23 @@ function renderDayWorkList(dateStr) {
         row.className = "card";
         row.style.cssText = "display:flex; justify-content:space-between; align-items:flex-start; padding:12px; margin-top:0; margin-bottom:10px; cursor:pointer;";
         
-        // [V8.7 Request III-7] 垃圾桶刪除按鈕
         row.innerHTML = `
             <div style="display:flex; flex-direction:column; flex:1; padding-right:10px;">
                 <div style="font-weight:bold; font-size:1.1rem; display:flex; align-items:center;">
                     <div style="width:12px; height:12px; background:${c}; border-radius:50%; margin-right:8px; flex-shrink:0;"></div>
                     ${name}
                 </div>
-                <div id="${accordionId}" class="workers-accordion" style="max-height: 1.2em;">
+                <div id="${accordionId}" class="workers-accordion">
                     ${workerNames || '<span style="color:var(--text-disabled)">無師傅上工</span>'}
                 </div>
                 ${workerNames ? `<div id="${btnId}" style="text-align:center; color:var(--primary); font-size:0.8rem; margin-top:2px; padding:2px;" onclick="event.stopPropagation(); toggleAccordion('${accordionId}', '${btnId}')">v</div>` : ''}
             </div>
-            <div style="color:var(--danger); padding:8px; cursor:pointer; flex-shrink:0;" onclick="event.stopPropagation(); delDailyWork('${r.id}')">
+            <div style="color:var(--danger); padding:8px; cursor:pointer; flex-shrink:0; display:flex; align-items:center; justify-content:center;" onclick="event.stopPropagation(); delDailyWork('${r.id}')">
                 <svg class="icon-svg" viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path><line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line></svg>
             </div>
         `;
         
-        // [V8.7 Request III-4] 取消長按，點擊即可編輯
+        // 點擊直接進入編輯
         row.onclick = () => openDailyWorkModal(r.id, dateStr);
 
         container.appendChild(row);
@@ -848,7 +844,6 @@ function renderClientList() {
         div.className = 'card';
         div.style.cssText = "padding:12px;margin-bottom:8px;display:flex;justify-content:space-between;align-items:center;cursor:pointer;";
         div.onclick = () => openClientDetail(c.id);
-        // [V8.7 Request I-1] 案主名稱與金額細體
         div.innerHTML = `<span style="font-weight:normal;">${c.name}</span><span style="font-weight:normal;">$${total.toLocaleString()} ></span>`;
         list.appendChild(div);
     });
@@ -957,7 +952,7 @@ function saveProjectDef() {
     saveDB(); closeModal('modalProjectDef'); renderClientProjectList(cid); renderCalendar(); renderWorkerList();
 }
 
-/* --- 全域共通師傅排序與計算 (Request II-5) --- */
+/* --- 全域共通師傅排序與計算 --- */
 function getWorkersWithStats() {
     const ym = `${curDate.getFullYear()}-${String(curDate.getMonth()+1).padStart(2,'0')}`;
     const dFilter = document.getElementById('wDateFilter').value;
@@ -1005,7 +1000,6 @@ function getWorkersWithStats() {
 function renderWorkerList() {
     const search = document.getElementById('wSearch').value.toLowerCase();
     const dFilter = document.getElementById('wDateFilter').value;
-    document.getElementById('btnDateReset').style.display = dFilter ? 'block' : 'none';
     const list = document.getElementById('workerList');
     list.innerHTML = "";
     
@@ -1064,22 +1058,25 @@ function saveSiteFilter() {
     closeModal('modalSiteSelect'); renderWorkerList();
 }
 function clearSiteFilter() { filterProjectIds = []; closeModal('modalSiteSelect'); renderWorkerList(); }
-function resetDateFilter() { document.getElementById('wDateFilter').value = ''; updateDateDisplayText(); renderWorkerList(); }
 
-// [V8.7 Request V-8] 日期篩選器文字顯示邏輯
+function resetDateFilter() { 
+    document.getElementById('wDateFilter').value = ''; 
+    updateDateDisplayText(); 
+    renderWorkerList(); 
+}
 function updateDateDisplayText() {
     const v = document.getElementById('wDateFilter').value;
     const disp = document.getElementById('dateDisplay');
     if (v) {
         disp.innerText = v;
+        document.getElementById('btnDateReset').style.display = 'block';
     } else {
-        disp.innerText = ''; // 預設空白
+        disp.innerText = ''; 
+        document.getElementById('btnDateReset').style.display = 'none';
     }
 }
 
 /* --- Worker & Extras --- */
-
-// [V8.7 Request II-1] 置頂免按儲存即時生效
 function instantSaveWorkerTop(isChecked) {
     const id = document.getElementById('wId').value;
     if(id) {
@@ -1123,7 +1120,6 @@ function openWorkerModal(id) {
         document.getElementById('wExtraTotal').innerText = exTotal.toLocaleString();
         document.getElementById('wFinalPay').innerText = (wage+exTotal).toLocaleString();
         
-        // [V8.7 Request II-3] 恢復合併雜費細項
         const list = document.getElementById('wExtraList'); list.innerHTML = "";
         const grouped = {};
         extras.forEach(ex => {
@@ -1207,8 +1203,6 @@ function toggleAddExtra() {
     const box = document.getElementById('addExtraBox');
     box.style.display = box.style.display==='none'?'block':'none';
 }
-
-// [V8.7 Request II-4] 雜費儲存即時更新人員名單
 function saveOneExtra() {
     const wid = document.getElementById('wId').value;
     const date = document.getElementById('exDate').value;
@@ -1227,7 +1221,7 @@ function saveOneExtra() {
     
     saveDB(); 
     renderWorkerList(); 
-    openWorkerModal(wid); // 重新展開以更新雜費細項
+    openWorkerModal(wid);
 }
 
 /* --- Extra Detail Logic --- */
@@ -1276,7 +1270,7 @@ function delExtraFromDetail(eid, wid, extraName) {
     if(confirm('刪除？')) { 
         db.extras = db.extras.filter(e => e.id !== eid);
         saveDB();
-        renderWorkerList();
+        renderWorkerList(); 
         const ym = `${curDate.getFullYear()}-${String(curDate.getMonth()+1).padStart(2,'0')}`;
         const remaining = db.extras.filter(e => e.wid === wid && e.date.startsWith(ym) && e.name === extraName);
         if(remaining.length === 0) {
@@ -1306,10 +1300,7 @@ function renderMeList() {
     const filter = document.getElementById('meFilter').value.toLowerCase();
     const list = document.getElementById('meList');
     list.innerHTML = "";
-    
-    // 使用共通排序
     const sortedWorkers = getWorkersWithStats();
-    
     sortedWorkers.forEach(w => {
         if(filter && !w.name.toLowerCase().includes(filter)) return;
         if(w.isDisabled) return; 
@@ -1374,13 +1365,13 @@ function switchPage(pid) {
     if(pid==='work') renderWorkerList();
     if(pid==='set') renderThemeGrid();
     
-    // [V8.7 Request III-10] Apply Background Gradient dynamically to body safely
     const t = THEMES[db.settings.theme] || THEMES[0];
     if(pid === 'cal') {
-        const themeRgba = `rgba(${t.r},${t.g},${t.b},0.15)`; 
-        document.body.style.backgroundImage = `linear-gradient(${themeRgba}, ${themeRgba})`;
+        const themeRgba = `rgba(${t.r},${t.g},${t.b},0.4)`; 
+        const baseColor = db.settings.darkMode ? '#000000' : '#FFFFFF';
+        document.body.style.background = `linear-gradient(${themeRgba}, ${themeRgba}), ${baseColor}`;
     } else {
-        document.body.style.backgroundImage = 'none';
+        document.body.style.background = 'var(--bg-std)';
     }
 }
 function openModal(id){ document.getElementById(id).style.display='flex'; setTimeout(()=>document.getElementById(id).style.opacity=1,10); }
