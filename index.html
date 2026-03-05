@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <title>工程帳本 Ultimate v8.10</title>
+    <title>工程帳本 Ultimate v8.12</title>
     <style>
         /* --- 1. 核心變數 --- */
         :root {
@@ -189,16 +189,19 @@
                 </div>
                 
                 <div style="border-top:1px solid var(--border); padding-top:10px; margin-top:10px;">
-                    <div style="display:flex; align-items:center; height:50px; position:relative; cursor:pointer;" onclick="const d = document.getElementById('wDateFilter'); if(d.showPicker) d.showPicker();">
-                        <svg class="icon-svg" style="color:var(--text-sub); margin-right:10px;" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
-                        <div id="dateDisplay" style="flex:1; text-align:center; font-size:16px; color:var(--text-main); font-weight:normal; height:100%; display:flex; align-items:center; justify-content:center;"></div>
+                    <label for="wDateFilter" style="display:flex; align-items:center; height:50px; position:relative; cursor:pointer; width:100%; margin:0;" onclick="const d=document.getElementById('wDateFilter'); if(d.showPicker) d.showPicker();">
+                        <svg class="icon-svg" style="color:var(--text-sub); margin-right:10px; flex-shrink:0;" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+                        
+                        <div id="dateDisplay" style="flex:1; text-align:center; font-size:16px; color:var(--text-main); font-weight:400; display:flex; align-items:center; justify-content:center;"></div>
+                        
                         <input type="date" id="wDateFilter" 
-                               style="position:absolute; top:0; left:0; width:100%; height:100%; opacity:0; z-index:10; cursor:pointer;" 
+                               style="position:absolute; width:1px; height:1px; opacity:0; border:none; padding:0; margin:0; left:50%;" 
                                onchange="updateDateDisplayText(); renderWorkerList()">
-                        <div id="btnDateReset" onclick="event.stopPropagation(); resetDateFilter()" style="display:none; padding:5px; cursor:pointer; color:var(--text-sub); z-index:20; margin-left:5px; position:relative;">
+                        
+                        <div id="btnDateReset" onclick="event.preventDefault(); event.stopPropagation(); resetDateFilter();" style="display:none; padding:10px; cursor:pointer; color:var(--text-sub); flex-shrink:0; position:relative; z-index:20;">
                             <svg class="icon-svg-sm" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
                         </div>
-                    </div>
+                    </label>
                 </div>
                 
                 <div style="height:1px; background:var(--border); margin:10px 0;"></div>
@@ -655,13 +658,13 @@ function openQuickAdd(dateStr) {
     if(listEl) listEl.scrollIntoView({ behavior: 'smooth' });
 }
 
-// [V8.10] 絕對可靠的日曆切換與重置
+// [V8.11] 處理日曆捷徑變更與確實重置 (自動跳回今天)
 function handleDailyDateChange(val) {
     if(val) {
         curDate = new Date(val);
         selectedDateStr = val;
     } else {
-        // [修復] 使用者在原生選單按了「清除」：直接跳回今天
+        // 如果按了清除/重置，自動跳回今天
         const today = new Date();
         curDate = today;
         const y = today.getFullYear();
@@ -692,16 +695,16 @@ function renderDayWorkList(dateStr) {
     const container = document.getElementById('calendarDayList');
     container.innerHTML = "";
     
-    // [V8.10] 絕對防呆的透明覆蓋觸發點
+    // [V8.11 完美復原] v8.6 的小日曆寫法 (加上 handleDailyDateChange 即可解決重置失效)
     const btnRow = document.createElement('div');
     btnRow.style.cssText = "display:flex; gap:10px; margin-bottom:15px;";
     btnRow.innerHTML = `
         <button class="btn" style="margin-top:0; flex:1;" onclick="openDailyWorkModal(null, '${dateStr}')">+ 新增本日案場</button>
-        <div style="position:relative; width:50px; height:50px;">
+        <div style="position:relative; width:50px;">
             <button class="btn-ghost" style="width:100%; height:100%; border-radius:14px; margin-top:0; display:flex; justify-content:center; align-items:center;">
                 <svg class="icon-svg" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
             </button>
-            <input type="date" value="${dateStr}" onchange="handleDailyDateChange(this.value)" style="position:absolute; top:0; left:0; width:100%; height:100%; opacity:0; z-index:10; cursor:pointer;">
+            <input type="date" value="${dateStr}" onchange="handleDailyDateChange(this.value)" style="position:absolute; top:0; left:0; width:100%; height:100%; opacity:0; z-index:10;">
         </div>
     `;
     container.appendChild(btnRow);
@@ -1060,12 +1063,12 @@ function saveSiteFilter() {
 }
 function clearSiteFilter() { filterProjectIds = []; closeModal('modalSiteSelect'); renderWorkerList(); }
 
-// [V8.10] 絕對還原 v8.7 的師傅日期過濾器寫法
 function resetDateFilter() { 
     document.getElementById('wDateFilter').value = ''; 
     updateDateDisplayText(); 
     renderWorkerList(); 
 }
+// [V8.11] 確保師傅篩選器日期為細體
 function updateDateDisplayText() {
     const v = document.getElementById('wDateFilter').value;
     const disp = document.getElementById('dateDisplay');
@@ -1348,6 +1351,7 @@ function switchPage(pid) {
     document.getElementById('nav-'+pid).classList.add('active');
     
     if(pid==='cal') {
+        // [V8.12] 自動回到今天
         const today = new Date();
         curDate = today;
         const y = today.getFullYear();
@@ -1357,7 +1361,7 @@ function switchPage(pid) {
         updateHeaderDate();
         renderCalendar();
         
-        // [V8.10] 確保背景色完美套用透明度 0.4
+        // [V8.12] 確保背景色完美套用透明度 0.4
         const t = THEMES[db.settings.theme] || THEMES[0];
         const themeRgba = `rgba(${t.r},${t.g},${t.b},0.4)`; 
         const baseColor = db.settings.darkMode ? '#121212' : '#F8F9FA';
