@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <title>工程帳本 Ultimate v8.14 (v9 Fix)</title>
+    <title>工程帳本 Ultimate v8.14</title>
     <style>
         /* --- 1. 核心變數 --- */
         :root {
@@ -658,23 +658,24 @@ function openQuickAdd(dateStr) {
     if(listEl) listEl.scrollIntoView({ behavior: 'smooth' });
 }
 
-// [修改] 只保留原生的 handleDailyDateChange，不需要額外的 resetDailyDate
+// 唯一修改點：加上延遲，讓 iOS 有時間處理重置指令再刷新網頁
 function handleDailyDateChange(val) {
-    if(val) {
-        curDate = new Date(val);
-        selectedDateStr = val;
-    } else {
-        // [關鍵邏輯] 當在小日曆點擊原生「清除」時，val 會是空字串，這裡就會自動跳回今天
-        const today = new Date();
-        curDate = today;
-        const y = today.getFullYear();
-        const m = String(today.getMonth()+1).padStart(2,'0');
-        const d = String(today.getDate()).padStart(2,'0');
-        selectedDateStr = `${y}-${m}-${d}`;
-    }
-    updateHeaderDate();
-    renderCalendar();
-    openQuickAdd(selectedDateStr);
+    setTimeout(() => {
+        if(val) {
+            curDate = new Date(val);
+            selectedDateStr = val;
+        } else {
+            const today = new Date();
+            curDate = today;
+            const y = today.getFullYear();
+            const m = String(today.getMonth()+1).padStart(2,'0');
+            const d = String(today.getDate()).padStart(2,'0');
+            selectedDateStr = `${y}-${m}-${d}`;
+        }
+        updateHeaderDate();
+        renderCalendar();
+        openQuickAdd(selectedDateStr);
+    }, 150); // 延遲 150 毫秒
 }
 
 window.toggleAccordion = function(accId, btnId) {
@@ -694,8 +695,7 @@ window.toggleAccordion = function(accId, btnId) {
 function renderDayWorkList(dateStr) {
     const container = document.getElementById('calendarDayList');
     container.innerHTML = "";
-
-    // [完美的 V8.6 寫法] 拿掉旁邊的重置鍵，保留 100% 透明玻璃覆蓋的超大觸及點
+    
     const btnRow = document.createElement('div');
     btnRow.style.cssText = "display:flex; gap:10px; margin-bottom:15px; align-items:center;";
     btnRow.innerHTML = `
@@ -705,7 +705,7 @@ function renderDayWorkList(dateStr) {
                 <div class="btn-ghost" style="width:100%; height:100%; border-radius:14px; margin-top:0; display:flex; justify-content:center; align-items:center; border:1px solid var(--border);">
                     <svg class="icon-svg" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
                 </div>
-                <input type="date" value="${dateStr}" onchange="handleDailyDateChange(this.value)" style="position:absolute; top:0; left:0; width:100%; height:100%; opacity:0; z-index:10; cursor:pointer;">
+                <input type="date" value="${dateStr}" onchange="const v=this.value; this.blur(); handleDailyDateChange(v);" style="position:absolute; top:0; left:0; width:100%; height:100%; opacity:0; z-index:10; cursor:pointer;">
             </div>
         </div>
     `;
@@ -1065,7 +1065,6 @@ function saveSiteFilter() {
 }
 function clearSiteFilter() { filterProjectIds = []; closeModal('modalSiteSelect'); renderWorkerList(); }
 
-// [保留 v8.9 的完美寫法]
 function resetDateFilter() { 
     document.getElementById('wDateFilter').value = ''; 
     updateDateDisplayText(); 
