@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <title>工程帳本 Ultimate v8.17</title>
+    <title>工程帳本 Ultimate v8.20</title>
     <style>
         /* --- 1. 核心變數 --- */
         :root {
@@ -172,7 +172,7 @@
                         <div class="btn-ghost" style="width:100%; height:100%; border-radius:14px; display:flex; justify-content:center; align-items:center; pointer-events:none; border:1px solid var(--border);">
                             <svg class="icon-svg" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
                         </div>
-                        <input type="date" id="dDateFilter" onchange="handleDailyDateChange(this.value)" style="position:absolute; width:1px; height:1px; opacity:0; border:none; padding:0; margin:0; left:50%; top:50%; z-index:-1;">
+                        <input type="date" id="dDateFilter" onchange="this.blur(); handleDailyDateChange(this.value);" style="position:absolute; width:1px; height:1px; opacity:0; border:none; padding:0; margin:0; left:50%; top:50%; z-index:-1;">
                     </label>
                 </div>
             </div>
@@ -552,7 +552,6 @@ window.onload = async () => {
         switchPage('cal'); 
         initGestures(); 
         
-        // 確保初始載入時同步靜態 input
         const dInput = document.getElementById('dDateFilter');
         if(dInput) dInput.value = selectedDateStr;
 
@@ -671,7 +670,6 @@ function openQuickAdd(dateStr) {
     selectedDateStr = dateStr;
     renderCalendar(); 
     
-    // 更新靜態日曆的值
     const dInput = document.getElementById('dDateFilter');
     if(dInput) dInput.value = dateStr;
 
@@ -681,7 +679,6 @@ function openQuickAdd(dateStr) {
 }
 
 function handleDailyDateChange(val) {
-    // [完美防呆] 使用 setTimeout 讓原生 iOS 日曆有時間先關閉
     setTimeout(() => {
         if(val) {
             curDate = new Date(val);
@@ -694,6 +691,10 @@ function handleDailyDateChange(val) {
             const d = String(today.getDate()).padStart(2,'0');
             selectedDateStr = `${y}-${m}-${d}`;
         }
+        
+        const dInput = document.getElementById('dDateFilter');
+        if(dInput) dInput.value = selectedDateStr;
+
         updateHeaderDate();
         renderCalendar();
         openQuickAdd(selectedDateStr);
