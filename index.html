@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <title>工程帳本 Ultimate v10-2</title>
+    <title>工程帳本 Ultimate v10-3</title>
     <style>
         /* --- 1. 核心變數 --- */
         :root {
@@ -186,8 +186,8 @@
                     <div class="dash-label">案場管理</div>
                     <div class="dash-val">查看</div>
                 </div>
-                <div class="dash-card right">
-                    <div class="dash-label">總支出</div>
+                <div class="dash-card right" onclick="openPieChart()">
+                    <div class="dash-label">總支出 (點擊看分佈)</div>
                     <div class="dash-val" id="totalExp">$0</div>
                 </div>
             </div>
@@ -209,7 +209,7 @@
                         
                         <input type="date" id="wDateFilter" 
                                style="position:absolute; width:1px; height:1px; opacity:0; border:none; padding:0; margin:0; left:50%;" 
-                               onchange="this.blur(); updateDateDisplayText(); renderWorkerList()">
+                               onchange="if(!this.value){ this.blur(); resetDateFilter(); } else { updateDateDisplayText(); renderWorkerList(); }">
                     </label>
                     
                     <div id="btnDateReset" onclick="resetDateFilter();" style="display:none; padding:10px; cursor:pointer; color:var(--text-sub); flex-shrink:0; margin-left:5px;">
@@ -362,10 +362,8 @@
                 
                 <div id="clientProjectList" style="margin-bottom:15px;"></div>
                 
-                <div style="display:flex; gap:10px;">
-                    <button class="btn btn-unhide btn-sm" onclick="editClientName()">編輯案主</button>
-                    <button class="btn btn-danger btn-sm" onclick="deleteClient()">刪除案主</button>
-                </div>
+                <button class="btn btn-unhide" style="margin-top:10px;" onclick="editClientName()">編輯案主</button>
+                <button class="btn btn-danger" style="margin-top:10px;" onclick="deleteClient()">刪除案主</button>
             </div>
         </div>
     </div>
@@ -433,6 +431,7 @@
                             <option value="">(無案場)</option>
                         </select>
                         <input id="exName" list="extraTypes" class="input-f" placeholder="項目 (可選或輸入)" style="margin-bottom:5px">
+                        <input id="exNote" class="input-f" placeholder="備註 (選填)" style="margin-bottom:5px">
                         <input id="exAmt" type="number" class="input-f" placeholder="金額" style="margin-bottom:5px">
                         <button id="btnAddExtraAction" class="btn" style="padding:8px; font-size:14px; margin:0;" onclick="saveOneExtra()">加入</button>
                     </div>
@@ -486,10 +485,10 @@
                 <h3>批次新增操作</h3>
                 
                 <div style="display:flex; gap:10px; margin-bottom:12px;">
-                    <button id="btnModeOvertime" class="btn" style="margin-top:0; flex:1; opacity:0.4;" onclick="setMeMode('overtime')">加班系統</button>
-                    <button id="btnModeMulti" class="btn" style="margin-top:0; flex:1; opacity:1;" onclick="setMeMode('multi')">多人支付</button>
+                    <button id="btnModeOvertime" class="btn" style="margin-top:0; flex:1; opacity:1;" onclick="setMeMode('overtime')">加班系統</button>
+                    <button id="btnModeMulti" class="btn" style="margin-top:0; flex:1; opacity:0.4;" onclick="setMeMode('multi')">多人支付</button>
                 </div>
-                <input type="hidden" id="meMode" value="multi">
+                <input type="hidden" id="meMode" value="overtime">
 
                 <input id="meDate" type="date" class="input-f" onchange="handleMeDateChange(this)">
                 
@@ -497,12 +496,13 @@
                     <option value="">(無案場)</option>
                 </select>
                 
-                <div id="meMultiFields">
-                    <input id="meName" list="extraTypes" class="input-f" placeholder="項目 (可選或輸入)">
-                    <input id="meAmt" type="number" class="input-f" placeholder="金額">
+                <div id="meMultiFields" style="display:none;">
+                    <input id="meName" list="extraTypes" class="input-f" placeholder="項目 (可選或輸入)" style="margin-bottom:5px">
+                    <input id="meNote" class="input-f" placeholder="備註 (選填)" style="margin-bottom:5px">
+                    <input id="meAmt" type="number" class="input-f" placeholder="金額" style="margin-bottom:12px">
                 </div>
                 
-                <div id="meOvertimeFields" style="display:none; gap:10px; margin-bottom:12px;">
+                <div id="meOvertimeFields" style="display:flex; gap:10px; margin-bottom:12px;">
                     <input id="meHours" type="number" step="0.5" min="0.5" class="input-f" placeholder="加班時數 (如: 1.5)" style="margin-bottom:0; flex:1;">
                     <select id="meMultiplier" class="input-f" style="margin-bottom:0; flex:1; appearance: none; background-image: url('data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\' width=\'24\' height=\'24\' viewBox=\'0 0 24 24\' fill=\'none\' stroke=\'%23888\' stroke-width=\'2\' stroke-linecap=\'round\' stroke-linejoin=\'round\'><polyline points=\'6 9 12 15 18 9\'/></svg>'); background-repeat: no-repeat; background-position: right 10px center; padding-right:30px;">
                         <option value="1">倍率 x 1</option>
@@ -516,6 +516,22 @@
                 </div>
                 <div id="meList" style="max-height:200px; overflow-y:auto; border:1px solid var(--border); padding:10px; border-radius:10px;"></div>
                 <button class="btn" onclick="saveMultiExtra()">完成</button>
+            </div>
+        </div>
+    </div>
+    
+    <div id="modalPieChart" class="overlay" style="z-index:2300;">
+        <div class="modal-box">
+            <div class="modal-header">
+                <div class="modal-close" onclick="closeModal('modalPieChart')">
+                    <svg class="icon-svg" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                </div>
+            </div>
+            <div class="modal-content-scroll" style="display:flex; flex-direction:column; align-items:center;">
+                <h3 style="margin-top:0; margin-bottom:10px;">本月支出分析</h3>
+                <div id="pieChartElement" style="width:180px; height:180px; border-radius:50%; background:#EEE; margin-bottom:20px; box-shadow:0 4px 10px rgba(0,0,0,0.1);"></div>
+                <div style="font-weight:800; font-size:1.3rem; margin-bottom:15px; color:var(--text-main);">總支出: $<span id="pieTotalDisplay">0</span></div>
+                <div id="pieLegend" style="width:100%; font-size:0.9rem;"></div>
             </div>
         </div>
     </div>
@@ -738,7 +754,7 @@ window.toggleAccordion = function(accId, btnId) {
 function renderDayWorkList(dateStr) {
     const container = document.getElementById('calendarDayList');
     container.innerHTML = "";
-
+    
     const records = db.sites.filter(s => s.date === dateStr);
     records.forEach(r => {
         let colorIdx = 0; let name = "未命名";
@@ -834,16 +850,17 @@ function saveDailyWork() {
     const chks = document.querySelectorAll('#deWorkerList input:checked');
     const selectedIds = Array.from(chks).map(c => c.value);
     
+    // [舊帳保護]
     const existingSite = id ? db.sites.find(s => s.id === id) : null;
     
     const newWorkers = selectedIds.map(wid => {
         let snapRate = 0;
         const existingW = existingSite ? existingSite.workers.find(w => w.id === wid) : null;
         if (existingW && existingW.snapshotRate !== undefined) {
-            snapRate = existingW.snapshotRate; // 舊帳保護：保留舊日薪
+            snapRate = existingW.snapshotRate; // 舊工保留當初紀錄好的薪資
         } else {
             const master = db.workers.find(w => w.id === wid);
-            snapRate = master ? (Number(master.rate) * 8 || 0) : 0; // 新增時自動以 時薪x8 轉換為日薪
+            snapRate = master ? (Number(master.rate) * 8 || 0) : 0; // [修改2] 新工自動計算 時薪x8 作為當日工資
         }
         return { id: wid, snapshotRate: snapRate };
     });
@@ -1103,15 +1120,17 @@ function saveSiteFilter() {
 }
 function clearSiteFilter() { filterProjectIds = []; closeModal('modalSiteSelect'); renderWorkerList(); }
 
-/* [徹底重置清除快取法] */
+/* [徹底重置清除快取法] 師傅名單日曆專用 */
 function resetDateFilter() { 
     const oldInput = document.getElementById('wDateFilter');
     const newInput = document.createElement('input');
     newInput.type = 'date';
     newInput.id = 'wDateFilter';
     newInput.style.cssText = oldInput.style.cssText;
-    // [需求3] 重置後自動 blur 以關閉可能出現的選單
-    newInput.onchange = function() { this.blur(); updateDateDisplayText(); renderWorkerList(); };
+    // 加上 blur() 收合與防呆處理
+    newInput.onchange = function() { 
+        if(!this.value){ this.blur(); resetDateFilter(); } else { updateDateDisplayText(); renderWorkerList(); }
+    };
     oldInput.parentNode.replaceChild(newInput, oldInput);
     
     updateDateDisplayText(); 
@@ -1243,24 +1262,39 @@ function updateExtraSiteSelect(dateInputId, selectId) {
     });
     select.innerHTML = html;
 }
-function toggleAddExtra() {
+
+// [需求4,5] 獨立處理「新增」狀態切換，收合時清空內容
+function toggleAddExtra(forceClose) {
     const box = document.getElementById('addExtraBox');
-    box.style.display = box.style.display==='none'?'block':'none';
+    if (box.style.display === 'block' || forceClose) {
+        box.style.display = 'none';
+        document.getElementById('exName').value = '';
+        document.getElementById('exNote').value = '';
+        document.getElementById('exAmt').value = '';
+        editingExtraId = null;
+        document.getElementById('btnAddExtraAction').innerText = "加入";
+    } else {
+        box.style.display = 'block';
+        document.getElementById('exDate').value = new Date().toISOString().split('T')[0];
+        updateExtraSiteSelect('exDate', 'exSite');
+    }
 }
+
 function saveOneExtra() {
     const wid = document.getElementById('wId').value;
     const date = document.getElementById('exDate').value;
     const siteId = document.getElementById('exSite').value;
     const name = document.getElementById('exName').value;
+    const note = document.getElementById('exNote').value; // 加入備註
     const amount = document.getElementById('exAmt').value;
     if(!name || !amount) return;
     
     if (editingExtraId) {
         const idx = db.extras.findIndex(e => e.id === editingExtraId);
-        if(idx !== -1) db.extras[idx] = { ...db.extras[idx], date, siteId, name, amount };
+        if(idx !== -1) db.extras[idx] = { ...db.extras[idx], date, siteId, name, note, amount };
         editingExtraId = null;
     } else {
-        db.extras.push({ id:'e'+Date.now(), wid, date, siteId, name, amount });
+        db.extras.push({ id:'e'+Date.now(), wid, date, siteId, name, note, amount });
     }
     saveDB(); renderWorkerList(); openWorkerModal(wid);
 }
@@ -1282,10 +1316,12 @@ function openExtraDetail(wid, extraName) {
              siteNameText = p ? p.name : '未命名';
          }
          const siteHtml = siteNameText ? `<span style="font-size:0.8em; color:var(--primary); margin-left:5px;">(${siteNameText})</span>` : '';
+         // 顯示備註文字
+         const noteHtml = ex.note ? `<span style="font-size:0.85em; color:var(--text-sub); margin-left:6px;">${ex.note}</span>` : '';
          list.innerHTML += `
             <div style="display:flex;justify-content:space-between;font-size:0.9rem;margin-bottom:10px;align-items:center;border-bottom:1px solid var(--border);padding-bottom:5px">
                 <span style="cursor:pointer;flex:1" onclick="editExtraFromDetail('${ex.id}', '${wid}')">
-                    ${ex.date.slice(5)} ${siteHtml} <span style="font-size:0.8em;color:var(--text-sub); margin-left:5px">✎</span>
+                    ${ex.date.slice(5)} ${siteHtml} ${noteHtml} <span style="font-size:0.8em;color:var(--text-sub); margin-left:5px">✎</span>
                 </span>
                 <span>$${ex.amount} <span style="color:var(--danger);cursor:pointer;margin-left:8px" onclick="delExtraFromDetail('${ex.id}','${wid}','${extraName}')">✕</span></span>
             </div>`;
@@ -1302,6 +1338,7 @@ function editExtraFromDetail(eid, wid) {
     updateExtraSiteSelect('exDate', 'exSite'); 
     document.getElementById('exSite').value = ex.siteId || ""; 
     document.getElementById('exName').value = ex.name;
+    document.getElementById('exNote').value = ex.note || "";
     document.getElementById('exAmt').value = ex.amount;
     editingExtraId = eid;
     document.getElementById('btnAddExtraAction').innerText = "更新";
@@ -1338,10 +1375,10 @@ function setMeMode(mode) {
     }
 }
 
-// [需求2,3] 處理多人支付日曆的原生重置
+// [需求2,3] 處理批次日曆的原生重置：退回今天並收合
 function handleMeDateChange(el) {
-    el.blur(); // 確保選完日期或重置後瞬間自動收合日曆
-    if(!el.value) { // 如果按了原生重置，強制回到今天
+    if(!el.value) {
+        el.blur(); // 瞬間收合
         const today = new Date();
         const y = today.getFullYear();
         const m = String(today.getMonth()+1).padStart(2,'0');
@@ -1357,19 +1394,24 @@ function openMultiExtra() {
     updateExtraSiteSelect('meDate', 'meSite');
     
     document.getElementById('meName').value = '';
+    document.getElementById('meNote').value = '';
     document.getElementById('meAmt').value = '';
     document.getElementById('meHours').value = '';
     document.getElementById('meMultiplier').value = '1';
-    setMeMode('multi');
+    
+    // [需求6] 預設為加班系統
+    setMeMode('overtime');
     
     renderMeList(); openModal('modalMultiExtra');
 }
+
 function toggleAllMeCheckboxes() {
     const chks = document.querySelectorAll('.me-chk');
     if (chks.length === 0) return;
     const allChecked = Array.from(chks).every(c => c.checked);
     chks.forEach(c => c.checked = !allChecked);
 }
+
 function renderMeList() {
     const filter = document.getElementById('meFilter').value.toLowerCase();
     const list = document.getElementById('meList');
@@ -1383,6 +1425,7 @@ function renderMeList() {
         list.appendChild(div);
     });
 }
+
 function saveMultiExtra() {
     const mode = document.getElementById('meMode').value;
     const date = document.getElementById('meDate').value;
@@ -1393,9 +1436,10 @@ function saveMultiExtra() {
     
     if(mode === 'multi') {
         const name = document.getElementById('meName').value;
+        const note = document.getElementById('meNote').value;
         const amt = document.getElementById('meAmt').value;
         if(!name || !amt) return alert('資料不完整');
-        chks.forEach(c => db.extras.push({ id:'e'+Date.now()+Math.random(), wid: c.value, date, siteId, name, amount: amt }));
+        chks.forEach(c => db.extras.push({ id:'e'+Date.now()+Math.random(), wid: c.value, date, siteId, name, note, amount: amt }));
     } else if(mode === 'overtime') {
         if(!siteId) return alert('加班必須選擇案場');
         const hours = Number(document.getElementById('meHours').value);
@@ -1406,10 +1450,10 @@ function saveMultiExtra() {
             const wid = c.value;
             const w = db.workers.find(x => x.id === wid);
             const hRate = w ? (Number(w.rate) || 0) : 0;
-            const amount = Math.round(hRate * hours * multiplier); // 時薪 x 時數 x 倍率
-            // [需求4,5] 格式化加班文字，以利日曆和細項顯示
-            const formattedName = `加班 ${hours}H/${multiplier}倍`;
-            db.extras.push({ id:'e'+Date.now()+Math.random(), wid, date, siteId, name: formattedName, amount });
+            const amount = Math.round(hRate * hours * multiplier);
+            // 寫入加班備註格式
+            const formattedNote = `${hours}H/${multiplier}倍`;
+            db.extras.push({ id:'e'+Date.now()+Math.random(), wid, date, siteId, name: '加班', note: formattedNote, amount });
         });
     }
     
@@ -1441,7 +1485,10 @@ function openPersonalCalendar(wid) {
             const sw = s.workers.find(x => x.id === wid);
             html += `<div class="p-cal-site"><b>${p?p.name:'未命名'}</b> <span style="color:#888">($${sw.snapshotRate})</span></div>`;
         });
-        dExtras.forEach(e => html += `<div class="p-cal-extra">${e.name} $${e.amount}</div>`);
+        dExtras.forEach(e => {
+            const noteText = e.note ? ` <span style="color:var(--text-sub); font-size:0.85em;">${e.note}</span>` : '';
+            html += `<div class="p-cal-extra">${e.name}${noteText} $${e.amount}</div>`;
+        });
         
         const row = document.createElement('div');
         row.className = 'p-cal-row';
@@ -1450,6 +1497,79 @@ function openPersonalCalendar(wid) {
     }
     openModal('modalPersonalCal');
 }
+
+/* --- [需求9] 圓餅圖分析邏輯 --- */
+function openPieChart() {
+    const ym = `${curDate.getFullYear()}-${String(curDate.getMonth()+1).padStart(2,'0')}`;
+    let total = 0;
+    const itemMap = {};
+
+    // 1. 抓取本月案場工資
+    const mSites = db.sites.filter(s => s.date.startsWith(ym));
+    mSites.forEach(s => {
+        const p = (db.projects||[]).find(x => x.id === s.projectId);
+        const pName = p ? p.name : '未命名案場';
+        const pColor = p ? (THEMES[p.colorIdx] || THEMES[0]).hex : '#888';
+        
+        let sWage = 0;
+        s.workers.forEach(w => sWage += Number(w.snapshotRate||0));
+        
+        if(!itemMap[pName]) itemMap[pName] = { amount: 0, color: pColor, label: pName + ' 案場' };
+        itemMap[pName].amount += sWage;
+        total += sWage;
+    });
+
+    // 2. 抓取本月支付項目 (加班、雜支)
+    const mExtras = db.extras.filter(e => e.date.startsWith(ym));
+    mExtras.forEach(e => {
+        const eName = e.name.startsWith('加班') ? '加班費' : e.name; // 統一叫加班費
+        if(!itemMap[eName]) {
+            // 利用名稱自動產色，或使用預設色系
+            const colors = ['#FF9F40', '#FFCD56', '#4BC0C0', '#36A2EB', '#9966FF', '#FF6384'];
+            const hash = Array.from(eName).reduce((sum, char) => sum + char.charCodeAt(0), 0);
+            itemMap[eName] = { amount: 0, color: colors[hash % colors.length], label: eName };
+        }
+        itemMap[eName].amount += Number(e.amount);
+        total += Number(e.amount);
+    });
+
+    // 3. 計算與渲染圓餅圖
+    let gradientStr = [];
+    let currentPct = 0;
+    let legendHtml = '';
+    
+    // 過濾零值並排序 (金額大到小)
+    const sortedItems = Object.values(itemMap).filter(x => x.amount > 0).sort((a,b) => b.amount - a.amount);
+    
+    if(total === 0) {
+        document.getElementById('pieChartElement').style.background = '#EEE';
+        document.getElementById('pieLegend').innerHTML = '<div style="text-align:center;color:var(--text-sub);padding:20px;">本月尚無支出</div>';
+    } else {
+        sortedItems.forEach(item => {
+            const pct = (item.amount / total * 100);
+            const start = currentPct;
+            currentPct += pct;
+            gradientStr.push(`${item.color} ${start}% ${currentPct}%`);
+            
+            legendHtml += `
+                <div style="display:flex; justify-content:space-between; align-items:center; padding:10px 0; border-bottom:1px solid var(--border);">
+                    <div style="display:flex; align-items:center;">
+                        <div style="width:14px; height:14px; background:${item.color}; border-radius:50%; margin-right:10px;"></div>
+                        <span style="font-weight:bold;">${item.label}</span>
+                        <span style="color:var(--text-sub); margin-left:6px; font-size:0.8em;">(${pct.toFixed(1)}%)</span>
+                    </div>
+                    <b>$${item.amount.toLocaleString()}</b>
+                </div>
+            `;
+        });
+        document.getElementById('pieChartElement').style.background = `conic-gradient(${gradientStr.join(', ')})`;
+        document.getElementById('pieLegend').innerHTML = legendHtml;
+    }
+    
+    document.getElementById('pieTotalDisplay').innerText = total.toLocaleString();
+    openModal('modalPieChart');
+}
+
 
 /* --- Core / UI Helpers --- */
 function switchPage(pid) {
