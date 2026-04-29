@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <title>工程帳本 Ultimate v10-5</title>
+    <title>工程帳本 Ultimate v10-6</title>
     <style>
         /* --- 1. 核心變數 --- */
         :root {
@@ -373,384 +373,6 @@
         <div class="modal-box">
             <div class="modal-header">
                 <div class="modal-close" onclick="closeModal('modalProjectDef')">
-                    <svg class="icon-svg" viewBox="0 0 24 24"><line x1="18" y1我可以為您修改以下代碼：
-
-```html
-<!DOCTYPE html>
-<html lang="zh-TW">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <title>工程帳本 Ultimate v10-4</title>
-    <style>
-        /* --- 1. 核心變數 --- */
-        :root {
-            --theme-r: 86; --theme-g: 158; --theme-b: 138;
-            --primary: rgb(var(--theme-r), var(--theme-g), var(--theme-b));
-            --bg-std: #F8F9FA; --bg-card: #FFFFFF;
-            --text-main: #333333; --text-sub: #888888; --text-disabled: #BDBDBD;
-            --border: #EEEEEE;
-            --shadow: 0 4px 15px rgba(0,0,0,0.06);
-            --danger: #FF6B6B;
-            --safe-bottom: env(safe-area-inset-bottom, 20px);
-        }
-        [data-mode="dark"] {
-            --bg-std: #121212; --bg-card: #1E1E1E;
-            --text-main: #E0E0E0; --text-sub: #A0A0A0; --text-disabled: #555555;
-            --border: #333333; --shadow: 0 4px 15px rgba(0,0,0,0.3);
-        }
-        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; user-select: none; font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", Roboto, sans-serif; }
-        body { margin: 0; background: var(--bg-std); color: var(--text-main); padding-bottom: calc(90px + var(--safe-bottom)); overflow-x: hidden; transition: background 0.3s ease, color 0.3s ease; }
-
-        /* --- UI Components --- */
-        .app-header { position: sticky; top: 0; z-index: 50; background: rgba(var(--bg-card-rgb, 255,255,255), 0.8); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); padding: 10px 20px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid var(--border); }
-        [data-mode="dark"] .app-header { background: rgba(30,30,30,0.8); }
-        .date-trigger { font-size: 1.4rem; font-weight: 800; color: var(--text-main); background: transparent; border: none; cursor: pointer; display: flex; align-items: center; gap: 6px; }
-        .date-trigger::after { content: "▼"; font-size: 0.7rem; color: var(--text-sub); margin-top: 2px; }
-        .mode-toggle { background: transparent; border: 1px solid var(--border); width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: var(--text-main); cursor: pointer; transition: all 0.2s; }
-        
-        .page { display: none; padding: 15px; animation: fadeIn 0.3s ease; min-height: 100vh; }
-        .page.active { display: block; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
-
-        .card { background: var(--bg-card); border-radius: 18px; padding: 16px; margin-bottom: 16px; box-shadow: var(--shadow); position: relative; border: 1px solid var(--border); }
-        
-        /* Cal */
-        .cal-wrapper { touch-action: pan-y pinch-zoom; }
-        .grid-7 { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); width: 100%; }
-        .week-header { text-align: center; font-size: 0.8rem; color: var(--text-sub); padding-bottom: 8px; border-bottom: 1px solid var(--border); margin-bottom: 4px; white-space: nowrap; }
-        .day-cell { min-height: 85px; height: auto; border-radius: 10px; padding: 2px; margin-bottom: 4px; display: flex; flex-direction: column; align-items: center; border: 1px solid transparent; cursor: pointer; position: relative; overflow: hidden; }
-        .day-num { font-size: 1rem; font-weight: 500; margin-bottom: 3px; width: 26px; height: 26px; display: flex; align-items: center; justify-content: center; border-radius: 50%; z-index: 2; flex-shrink: 0; }
-        
-        /* 點擊日期的反灰效果 */
-        .day-cell.selected .day-num { background: #E0E0E0; color: #333; font-weight: bold; } 
-        .is-weekend { color: var(--danger); }
-        
-        .site-tag { width: 95%; max-width: 100%; font-size: 10px; padding: 3px 6px; border-radius: 8px; color: white; margin-bottom: 1.5px; text-align: center; font-weight: bold; line-height: 1.2; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; pointer-events: none; }
-
-        /* Dashboard */
-        .dashboard-row { display: flex; gap: 12px; margin-bottom: 16px; }
-        .dash-card { flex: 1; padding: 16px; border-radius: 18px; color: white; display: flex; flex-direction: column; justify-content: center; box-shadow: var(--shadow); cursor: pointer; position: relative; overflow: hidden; }
-        .dash-card.left { background: #546E7A; }
-        .dash-card.right { background: #263238; }
-        .dash-label { font-size: 0.85rem; opacity: 0.9; margin-bottom: 4px; }
-        .dash-val { font-size: 1.5rem; font-weight: 800; letter-spacing: 0.5px; }
-
-        .worker-card { display: flex; justify-content: space-between; align-items: center; padding: 18px; margin-bottom: 10px; border: 1px solid var(--border); }
-        .worker-card.disabled { color: var(--text-disabled); border-color: var(--border); }
-        .worker-card.disabled b { color: var(--text-disabled); } 
-
-        .btn { width: 100%; padding: 14px; border: none; border-radius: 14px; font-weight: 700; font-size: 16px; cursor: pointer; color: white; margin-top: 10px; background: linear-gradient(135deg, var(--primary), rgba(var(--theme-r), var(--theme-g), var(--theme-b), 0.7)); box-shadow: 0 4px 12px rgba(var(--theme-r), var(--theme-g), var(--theme-b), 0.3); transition: transform 0.1s, box-shadow 0.2s; }
-        .btn:active { transform: scale(0.97); }
-        .btn-danger { background: linear-gradient(135deg, #FF6B6B, #E53935); box-shadow: 0 4px 12px rgba(229, 57, 53, 0.3); }
-        .btn-hide { background: linear-gradient(135deg, #FF9999, #FF6B6B); box-shadow: 0 4px 12px rgba(255, 107, 107, 0.3); }
-        .btn-unhide { background: linear-gradient(135deg, #78909C, #546E7A); box-shadow: 0 4px 12px rgba(84, 110, 122, 0.3); }
-        .btn-ghost { background: var(--bg-std); color: var(--text-sub); box-shadow: none; border: 1px solid var(--border); }
-        .btn-sm { width: auto; padding: 8px 16px; font-size: 14px; margin-top: 0; }
-        
-        .input-f { width: 100%; padding: 14px; border: 1px solid var(--border); border-radius: 12px; font-size: 16px; margin-bottom: 12px; background: var(--bg-std); color: var(--text-main); outline: none; }
-        .input-f:focus { border-color: var(--primary); background: var(--bg-card); }
-
-        /* Picker & Overlay */
-        .overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 2000; display: none; opacity: 0; transition: opacity 0.2s; align-items: center; justify-content: center; }
-        .picker-container { position: fixed; bottom: 0; width: 100%; background: var(--bg-card); z-index: 2100; border-radius: 24px 24px 0 0; padding: 20px 0; transform: translateY(100%); transition: transform 0.3s cubic-bezier(0.1, 0.9, 0.2, 1); }
-        .picker-actions { display: flex; justify-content: space-between; padding: 0 24px 15px; font-weight: 600; font-size: 1rem; color: var(--text-main); }
-        .picker-body { height: 220px; display: flex; position: relative; overflow: hidden; mask-image: linear-gradient(to bottom, transparent, black 20%, black 80%, transparent); -webkit-mask-image: linear-gradient(to bottom, transparent, black 20%, black 80%, transparent); }
-        .picker-col { flex: 1; overflow-y: scroll; scroll-snap-type: y mandatory; text-align: center; padding: 90px 0; }
-        .picker-col::-webkit-scrollbar { display: none; }
-        .picker-item { height: 40px; line-height: 40px; scroll-snap-align: center; font-size: 1.1rem; color: var(--text-sub); transition: all 0.1s; }
-        .picker-item.active { color: var(--text-main); font-size: 1.5rem; font-weight: 800; transform: scale(1.1); }
-        .picker-highlight { position: absolute; top: 50%; left: 0; width: 100%; height: 40px; margin-top: -20px; background: rgba(128,128,128,0.05); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); pointer-events: none; }
-
-        /* Modal */
-        .modal-box { background: var(--bg-card); width: 88%; max-width: 380px; max-height: 85vh; border-radius: 24px; position: relative; transform: scale(0.95); transition: transform 0.2s; display: flex; flex-direction: column; overflow: hidden; }
-        .modal-box.medium { max-height: 80vh; }
-        .modal-header { padding: 15px 15px 5px 15px; flex-shrink: 0; display: flex; justify-content: flex-end; }
-        .modal-content-scroll { padding: 0 24px 24px 24px; overflow-y: auto; flex: 1; }
-        .modal-close { width: 30px; height: 30px; display:flex; align-items:center; justify-content:center; background: var(--bg-std); border-radius:50%; color: var(--text-sub); cursor:pointer; }
-        
-        .quick-site-row { display: flex; justify-content: space-between; align-items: center; background: var(--bg-card); border: 1px solid var(--border); border-radius: 12px; padding: 12px; margin-bottom: 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.03); cursor: pointer; transition: background 0.1s; }
-        .quick-site-row:active { background: var(--bg-std); }
-
-        .theme-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 8px; margin: 15px 0; justify-items: center; }
-        .theme-dot { width: 100%; aspect-ratio: 1; border-radius: 50%; cursor: pointer; border: 3px solid transparent; transition: transform 0.2s; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
-        .theme-dot.active { transform: scale(1.15); border-color: var(--text-main); }
-        
-        .bottom-nav { position: fixed; bottom: 0; width: 100%; height: calc(70px + var(--safe-bottom)); background: var(--bg-card); border-top: 1px solid var(--border); display: flex; justify-content: space-around; padding-bottom: var(--safe-bottom); z-index: 100; }
-        .nav-item { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; color: var(--text-sub); font-size: 10px; transition: color 0.2s; }
-        .nav-item.active { color: var(--primary); font-weight: bold; }
-        .nav-item svg { width: 26px; height: 26px; margin-bottom: 4px; fill: currentColor; }
-        
-        .icon-svg { width: 20px; height: 20px; stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
-        .icon-svg-sm { width: 16px; height: 16px; stroke: currentColor; fill: none; stroke-width: 2; }
-        
-        .chk-row { display: flex; justify-content: space-between; align-items: center; padding: 12px 5px; border-bottom: 1px dashed var(--border); }
-        .chk-row input[type="checkbox"] { width: 22px; height: 22px; accent-color: var(--primary); }
-        .chk-row.disabled-row { color: var(--text-disabled); }
-        .fab-btn { position: fixed; bottom: calc(85px + var(--safe-bottom)); right: 20px; width: 56px; height: 56px; border-radius: 50%; background: #263238; color: white; border: none; box-shadow: 0 6px 20px rgba(0,0,0,0.25); display: flex; align-items: center; justify-content: center; z-index: 90; }
-
-        .p-cal-row { display: flex; gap: 10px; padding: 10px 0; border-bottom: 1px solid var(--border); }
-        .p-cal-date { width: 50px; font-weight: bold; text-align: center; display: flex; flex-direction: column; align-items: center; }
-        .p-cal-content { flex: 1; font-size: 0.9rem; }
-        .p-cal-site { margin-bottom: 4px; }
-        .p-cal-extra { color: var(--text-sub); font-size: 0.85rem; margin-top: 2px; }
-
-        .modal-sticky-footer { position: sticky; bottom: -1px; background: var(--bg-card); padding: 15px 0 5px 0; border-top: 1px solid var(--border); margin-top: auto; }
-        
-        .project-row { background: var(--bg-std); margin: 5px 0; padding: 12px; border-radius: 12px; display: flex; justify-content: space-between; align-items: center; cursor: pointer; transition: background 0.1s; }
-        .project-row:active { background: #EEE; }
-
-        .workers-accordion {
-            max-height: 1.2em; 
-            line-height: 1.2;
-            overflow: hidden; 
-            font-size: 0.85rem; 
-            color: var(--text-sub); 
-            transition: max-height 0.3s ease-in-out; 
-            margin-top: 4px; 
-        }
-    </style>
-</head>
-<body>
-
-    <datalist id="extraTypes">
-        <option value="餐費代墊">
-        <option value="油資補助">
-        <option value="勞健保">
-        <option value="材料費">
-        <option value="當日領">
-    </datalist>
-
-    <header class="app-header">
-        <button class="date-trigger" onclick="openDatePicker()">
-            <span id="dispYear">2026</span>年 <span id="dispMonth">1</span>月
-        </button>
-        <button class="mode-toggle" onclick="toggleDarkMode()">
-            <svg class="icon-svg" id="iconMoon" style="display:block" viewBox="0 0 24 24"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
-            <svg class="icon-svg" id="iconSun" style="display:none" viewBox="0 0 24 24"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>
-        </button>
-    </header>
-
-    <main>
-        <section id="tab-cal" class="page active">
-            <div class="card cal-wrapper" id="calWrapper">
-                <div class="grid-7">
-                    <div class="week-header is-weekend">日</div><div class="week-header">一</div><div class="week-header">二</div><div class="week-header">三</div><div class="week-header">四</div><div class="week-header">五</div><div class="week-header is-weekend">六</div>
-                </div>
-                <div id="calendarGrid" class="grid-7"></div>
-            </div>
-            
-            <div style="display:flex; gap:10px; margin-bottom:15px; padding: 0 10px; align-items:center;">
-                <button class="btn" style="margin-top:0; flex:1;" onclick="openDailyWorkModal(null, selectedDateStr)">+ 新增本日案場</button>
-                <div style="display:flex; align-items:center;">
-                    <label style="position:relative; width:50px; height:48px; margin:0; cursor:pointer; display:flex;" onclick="const d=document.getElementById('dDateFilter'); if(d.showPicker) d.showPicker();">
-                        <div class="btn-ghost" style="width:100%; height:100%; border-radius:14px; display:flex; justify-content:center; align-items:center; pointer-events:none; border:1px solid var(--border);">
-                            <svg class="icon-svg" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
-                        </div>
-                        <input type="date" id="dDateFilter" onchange="if(!this.value) this.blur(); handleDailyDateChange(this.value);" style="position:absolute; width:1px; height:1px; opacity:0; border:none; padding:0; margin:0; left:50%; top:50%; z-index:-1;">
-                    </label>
-                </div>
-            </div>
-
-            <div id="calendarDayList" style="padding: 0 10px; padding-bottom: 80px;"></div>
-        </section>
-
-        <section id="tab-work" class="page">
-            <div class="dashboard-row">
-                <div class="dash-card left" onclick="openPaymentModal()">
-                    <div class="dash-label">案場管理</div>
-                    <div class="dash-val">查看</div>
-                </div>
-                <div class="dash-card right" onclick="openPieChart()">
-                    <div class="dash-label">總支出</div>
-                    <div class="dash-val" id="totalExp">$0</div>
-                </div>
-            </div>
-
-            <div class="card">
-                <div style="display:flex; align-items:center; gap:10px; margin-bottom:10px;">
-                    <svg class="icon-svg" style="color:var(--text-sub); width:24px; height:24px; stroke-width:2.5;" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
-                    <input type="text" id="wSearch" class="input-f" style="margin:0; border:none; background:transparent;" placeholder="搜尋師傅..." oninput="renderWorkerList()">
-                    <div onclick="openSiteSelect()" style="padding:8px; cursor:pointer; color:var(--text-sub)">
-                        <svg class="icon-svg" viewBox="0 0 24 24"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"></path></svg>
-                    </div>
-                </div>
-                
-                <div style="border-top:1px solid var(--border); padding-top:10px; margin-top:10px; display:flex; align-items:center; height:50px;">
-                    <label for="wDateFilter" style="display:flex; align-items:center; height:100%; position:relative; cursor:pointer; flex:1; margin:0;" onclick="const d=document.getElementById('wDateFilter'); if(d.showPicker) d.showPicker();">
-                        <svg class="icon-svg" style="color:var(--text-sub); margin-right:10px; flex-shrink:0;" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
-                        
-                        <div id="dateDisplay" style="flex:1; text-align:center; font-size:16px; color:var(--text-main); font-weight:400; display:flex; align-items:center; justify-content:center;"></div>
-                        
-                        <input type="date" id="wDateFilter" 
-                               style="position:absolute; width:1px; height:1px; opacity:0; border:none; padding:0; margin:0; left:50%;" 
-                               onchange="if(!this.value){ this.blur(); } updateDateDisplayText(); renderWorkerList();">
-                    </label>
-                    
-                    <div id="btnDateReset" onclick="resetDateFilter();" style="display:none; padding:10px; cursor:pointer; color:var(--text-sub); flex-shrink:0; margin-left:5px;">
-                        <svg class="icon-svg-sm" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
-                    </div>
-                </div>
-                
-                <div style="height:1px; background:var(--border); margin:10px 0;"></div>
-                <button class="btn" style="margin-top:0" onclick="openWorkerModal()">+ 新增師傅</button>
-            </div>
-
-            <div id="workerList"></div>
-            <button class="fab-btn" onclick="openMultiExtra()">
-                <svg class="icon-svg" style="width:28px;height:28px" viewBox="0 0 24 24"><path d="M20 12V8H6a2 2 0 0 1-2-2c0-1.1.9-2 2-2h12v4"></path><path d="M4 6v12c0 1.1.9 2 2 2h14v-4"></path><path d="M18 12a2 2 0 0 0-2 2c0 1.1.9 2 2 2h4v-4h-4z"></path></svg>
-            </button>
-        </section>
-
-        <section id="tab-set" class="page">
-            <div class="card">
-                <div style="display:flex; align-items:center; gap:10px; margin-bottom:10px">
-                    <svg class="icon-svg" viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="8" rx="2"></rect><path d="M6 11v2a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2v-2"></path><path d="M12 15v6"></path><path d="M9 21h6"></path></svg>
-                    <h3>主題顏色</h3>
-                </div>
-                <div class="theme-grid" id="themeBox"></div>
-            </div>
-
-            <div class="card">
-                <div style="display:flex; align-items:center; gap:10px; margin-bottom:5px">
-                    <svg class="icon-svg" viewBox="0 0 24 24"><path d="M18 10h-1.26A8 8 0 1 0 9 20h9a5 5 0 0 0 0-10z"></path></svg>
-                    <h3 style="margin:0">雲端資料庫</h3>
-                </div>
-                <div class="chk-row" style="padding-top:5px">
-                    <span style="display:flex;align-items:center;gap:5px"><svg class="icon-svg-sm" viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg> 鎖定網址</span>
-                    <input type="checkbox" id="gasLock" onchange="toggleGasLock()">
-                </div>
-                <input id="gasUrl" class="input-f" placeholder="Google Apps Script URL">
-                <div id="syncStatus" style="font-size:0.8rem; color:var(--text-sub); text-align:right;"></div>
-            </div>
-
-            <div class="card">
-                <div style="display:flex; align-items:center; gap:10px; margin-bottom:10px; color:var(--danger)">
-                    <svg class="icon-svg" viewBox="0 0 24 24"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
-                    <h3>危險操作</h3>
-                </div>
-                <button class="btn btn-danger" onclick="masterReset()" style="display:flex;align-items:center;justify-content:center;gap:10px">
-                    <svg class="icon-svg" viewBox="0 0 24 24" style="color:white"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
-                    重置所有資料
-                </button>
-            </div>
-        </section>
-    </main>
-
-    <nav class="bottom-nav">
-        <div class="nav-item active" id="nav-cal" onclick="switchPage('cal')">
-            <svg viewBox="0 0 24 24"><path d="M19 4h-1V2h-2v2H8V2H6v2H5c-1.11 0-1.99.9-1.99 2L3 20a2 2 0 0 0 2 2h14c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 16H5V10h14v10z"/></svg>
-            日曆
-        </div>
-        <div class="nav-item" id="nav-work" onclick="switchPage('work')">
-            <svg viewBox="0 0 24 24"><path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"/></svg>
-            人員
-        </div>
-        <div class="nav-item" id="nav-set" onclick="switchPage('set')">
-            <svg viewBox="0 0 24 24"><path d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58a.49.49 0 0 0 .12-.61l-1.92-3.32a.488.488 0 0 0-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54a.484.484 0 0 0-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.04.17 0 .34.12.61l2.03 1.58c-.05.3-.09.63-.09.94s.02.64.07.94l-2.03 1.58a.49.49 0 0 0-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.04-.22 0-.45-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z"/></svg>
-            設定
-        </div>
-    </nav>
-
-    <div id="pickerOverlay" class="overlay" onclick="closePicker()">
-        <div id="modalDatePicker" class="picker-container" onclick="event.stopPropagation()">
-            <div class="picker-actions">
-                <span style="color:var(--text-sub); cursor:pointer;" onclick="closePicker()">取消</span>
-                <span style="color:var(--text-sub); font-weight:400">選擇月份</span>
-                <span style="color:var(--primary); cursor:pointer;" onclick="confirmDate()">確定</span>
-            </div>
-            <div class="picker-body">
-                <div class="picker-highlight"></div>
-                <div id="wheelY" class="picker-col"></div>
-                <div id="wheelM" class="picker-col"></div>
-            </div>
-        </div>
-    </div>
-
-    <div id="modalDailyEdit" class="overlay" style="z-index:2200;">
-        <div class="modal-box">
-            <div class="modal-header">
-                <div class="modal-close" onclick="closeModal('modalDailyEdit')">
-                    <svg class="icon-svg" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
-                </div>
-            </div>
-            <div class="modal-content-scroll">
-                <h3 id="dailyEditTitle">2026-01-01</h3>
-                <input id="deId" type="hidden">
-                <input id="deDate" type="hidden">
-                <select id="deProjectSelect" class="input-f" style="margin-bottom:15px; appearance: none; background: var(--bg-std); background-image: url('data:image/svg+xml;utf8,<svg xmlns=\'[http://www.w3.org/2000/svg](http://www.w3.org/2000/svg)\' width=\'24\' height=\'24\' viewBox=\'0 0 24 24\' fill=\'none\' stroke=\'%23888\' stroke-width=\'2\' stroke-linecap=\'round\' stroke-linejoin=\'round\'><polyline points=\'6 9 12 15 18 9\'/></svg>'); background-repeat: no-repeat; background-position: right 10px center; padding-right:30px;">
-                    <option value="" disabled selected>請選擇案場...</option>
-                </select>
-                <div style="display:flex; justify-content:space-between; margin-bottom:10px">
-                    <b>上工師傅</b>
-                    <input id="deWorkerFilter" style="padding:4px; font-size:12px; width:100px; border:1px solid var(--border); border-radius:6px; background:var(--bg-std); color:var(--text-main)" placeholder="搜尋..." oninput="renderDailyWorkerSelect()">
-                </div>
-                <div id="deWorkerList" style="max-height:220px; overflow-y:auto; border:1px solid var(--border); padding:10px; border-radius:10px; margin-bottom:15px;"></div>
-                <button class="btn" onclick="saveDailyWork()">加入</button>
-            </div>
-        </div>
-    </div>
-
-    <div id="modalPayment" class="overlay">
-        <div class="modal-box">
-            <div class="modal-header">
-                <div class="modal-close" onclick="closeModal('modalPayment')">
-                    <svg class="icon-svg" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
-                 </div>
-            </div>
-            <div class="modal-content-scroll">
-                <h3>案場請款管理</h3>
-                <div style="margin-bottom:10px;">
-                    <div style="display:flex; justify-content:space-between; align-items:center;">
-                        <b>案主</b>
-                        <button class="btn-ghost" style="padding:4px 8px; font-size:12px; margin:0;" onclick="toggleAddClient()">+ 新增</button>
-                    </div>
-                    <div id="addClientBox" style="display:none; background:rgba(var(--theme-r),var(--theme-g),var(--theme-b),0.1); padding:10px; border-radius:8px; margin-top:5px;">
-                        <input id="newClientName" class="input-f" placeholder="名稱" style="margin-bottom:5px">
-                        <button class="btn" style="padding:8px; font-size:14px; margin:0;" onclick="saveClient()">加入</button>
-                    </div>
-                </div>
-                <div id="clientList" style="max-height:350px; overflow-y:auto; margin-bottom:10px;"></div>
-                <div style="border-top:1px solid var(--border); padding-top:10px; margin-top:5px;">
-                    <div style="display:flex; justify-content:space-between; margin-bottom:10px; font-weight:bold; font-size:1.1rem;">
-                        <span>本月請款總計:</span>
-                        <span id="payTotalDisplay">$0</span>
-                    </div>
-                    <textarea id="payNote" class="input-f" style="height:60px;" placeholder="本月請款備註..."></textarea>
-                </div>
-                <button class="btn" onclick="closeModal('modalPayment')">關閉</button>
-            </div>
-        </div>
-    </div>
-
-    <div id="modalClientDetail" class="overlay" style="z-index:2100;">
-        <div class="modal-box">
-            <div class="modal-header">
-                <div class="modal-close" onclick="closeModal('modalClientDetail')">
-                    <svg class="icon-svg" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
-                </div>
-            </div>
-            <div class="modal-content-scroll">
-                <h3 id="clientDetailTitle" style="margin-bottom: 10px;">案主詳情</h3>
-                <input id="cdClientId" type="hidden">
-                <button class="btn" style="margin-bottom:15px;" onclick="openProjectDefModal()">+ 新增案場</button>
-                
-                <div id="clientProjectList" style="margin-bottom:15px;"></div>
-                
-                <div style="display:flex; gap:10px; margin-top:10px;">
-                    <button class="btn btn-unhide" style="margin-top:0; flex:1;" onclick="editClientName()">編輯案主</button>
-                    <button class="btn btn-danger" style="margin-top:0; flex:1;" onclick="deleteClient()">刪除案主</button>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <div id="modalProjectDef" class="overlay" style="z-index:2200;">
-        <div class="modal-box">
-            <div class="modal-header">
-                <div class="modal-close" onclick="closeModal('modalProjectDef')">
                     <svg class="icon-svg" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
                 </div>
             </div>
@@ -806,7 +428,7 @@
                     </div>
                     <div id="addExtraBox" style="display:none; background:rgba(var(--theme-r),var(--theme-g),var(--theme-b),0.1); padding:10px; border-radius:8px; margin-bottom:10px;">
                         <input id="exDate" type="date" class="input-f" style="margin-bottom:5px" onchange="updateExtraSiteSelect('exDate', 'exSite')">
-                        <select id="exSite" class="input-f" style="margin-bottom:5px; appearance: none; -webkit-appearance: none; background-image: url('data:image/svg+xml;utf8,<svg xmlns=\'[http://www.w3.org/2000/svg](http://www.w3.org/2000/svg)\' width=\'24\' height=\'24\' viewBox=\'0 0 24 24\' fill=\'none\' stroke=\'%23888\' stroke-width=\'2\' stroke-linecap=\'round\' stroke-linejoin=\'round\'><polyline points=\'6 9 12 15 18 9\'/></svg>'); background-repeat: no-repeat; background-position: right 10px center; padding-right: 30px;">
+                        <select id="exSite" class="input-f" style="margin-bottom:5px; appearance: none; -webkit-appearance: none; background-image: url('data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\' width=\'24\' height=\'24\' viewBox=\'0 0 24 24\' fill=\'none\' stroke=\'%23888\' stroke-width=\'2\' stroke-linecap=\'round\' stroke-linejoin=\'round\'><polyline points=\'6 9 12 15 18 9\'/></svg>'); background-repeat: no-repeat; background-position: right 10px center; padding-right: 30px;">
                             <option value="">(無案場)</option>
                         </select>
                         <input id="exName" list="extraTypes" class="input-f" placeholder="項目 (可選或輸入)" style="margin-bottom:5px">
@@ -871,7 +493,7 @@
 
                 <input id="meDate" type="date" class="input-f" onchange="handleMeDateChange(this)">
                 
-                <select id="meSite" class="input-f" style="margin-bottom:12px; appearance: none; -webkit-appearance: none; background-image: url('data:image/svg+xml;utf8,<svg xmlns=\'[http://www.w3.org/2000/svg](http://www.w3.org/2000/svg)\' width=\'24\' height=\'24\' viewBox=\'0 0 24 24\' fill=\'none\' stroke=\'%23888\' stroke-width=\'2\' stroke-linecap=\'round\' stroke-linejoin=\'round\'><polyline points=\'6 9 12 15 18 9\'/></svg>'); background-repeat: no-repeat; background-position: right 10px center; padding-right: 30px;">
+                <select id="meSite" class="input-f" style="margin-bottom:12px; appearance: none; -webkit-appearance: none; background-image: url('data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\' width=\'24\' height=\'24\' viewBox=\'0 0 24 24\' fill=\'none\' stroke=\'%23888\' stroke-width=\'2\' stroke-linecap=\'round\' stroke-linejoin=\'round\'><polyline points=\'6 9 12 15 18 9\'/></svg>'); background-repeat: no-repeat; background-position: right 10px center; padding-right: 30px;">
                     <option value="">(無案場)</option>
                 </select>
                 
@@ -883,7 +505,7 @@
                 
                 <div id="meOvertimeFields" style="display:flex; gap:10px; margin-bottom:12px;">
                     <input id="meHours" type="number" step="0.5" min="0.5" class="input-f" placeholder="加班時數 (如: 1.5)" style="margin-bottom:0; flex:1;">
-                    <select id="meMultiplier" class="input-f" style="margin-bottom:0; flex:1; appearance: none; background-image: url('data:image/svg+xml;utf8,<svg xmlns=\'[http://www.w3.org/2000/svg](http://www.w3.org/2000/svg)\' width=\'24\' height=\'24\' viewBox=\'0 0 24 24\' fill=\'none\' stroke=\'%23888\' stroke-width=\'2\' stroke-linecap=\'round\' stroke-linejoin=\'round\'><polyline points=\'6 9 12 15 18 9\'/></svg>'); background-repeat: no-repeat; background-position: right 10px center; padding-right:30px;">
+                    <select id="meMultiplier" class="input-f" style="margin-bottom:0; flex:1; appearance: none; background-image: url('data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\' width=\'24\' height=\'24\' viewBox=\'0 0 24 24\' fill=\'none\' stroke=\'%23888\' stroke-width=\'2\' stroke-linecap=\'round\' stroke-linejoin=\'round\'><polyline points=\'6 9 12 15 18 9\'/></svg>'); background-repeat: no-repeat; background-position: right 10px center; padding-right:30px;">
                         <option value="1">倍率 x 1</option>
                         <option value="1.33">倍率 x 1.33</option>
                     </select>
@@ -925,7 +547,7 @@
     </div>
 
 <script>
-// RGB to HSL
+// RGB to HSL Helper
 function rgbToHsl(r, g, b) {
     r /= 255; g /= 255; b /= 255;
     let max = Math.max(r, g, b), min = Math.min(r, g, b);
@@ -944,7 +566,7 @@ function rgbToHsl(r, g, b) {
     return [h * 360, s * 100, l * 100];
 }
 
-// HSL to RGB hex
+// HSL to RGB hex Helper
 function hslToHex(h, s, l) {
     s /= 100; l /= 100;
     let c = (1 - Math.abs(2 * l - 1)) * s,
@@ -960,25 +582,25 @@ function hslToHex(h, s, l) {
     return `#${toHex(r)}${toHex(g)}${toHex(b)}`;
 }
 
-// Generate dynamic pastel palette based on theme RGB
+// [防呆] 生成連動主題的粉彩色盤
 function generateThemePalette(num) {
     if (num === 0) return [];
     const rs = getComputedStyle(document.documentElement);
-    const r = parseInt(rs.getPropertyValue('--theme-r'));
-    const g = parseInt(rs.getPropertyValue('--theme-g'));
-    const b = parseInt(rs.getPropertyValue('--theme-b'));
+    let r = parseInt(rs.getPropertyValue('--theme-r'));
+    let g = parseInt(rs.getPropertyValue('--theme-g'));
+    let b = parseInt(rs.getPropertyValue('--theme-b'));
+    
+    // Fallback to default theme if parsed invalidly
+    if (isNaN(r) || isNaN(g) || isNaN(b)) { r = 86; g = 158; b = 138; }
+
     let [h, s, l] = rgbToHsl(r, g, b);
+    const pastelS = 65; 
+    const pastelL = 75; 
 
-    // Define target pastel Saturation and Lightness
-    const pastelS = 65; // Soft but saturated
-    const pastelL = 75; // Bright pastel
-
-    // Generate dynamic hues by shifting. Example shift: spread evenly
     let palette = [];
-    const shiftAmount = 360 / (num + 1); // evenly spread hues
+    const shiftAmount = 360 / Math.max(num, 1); 
 
     for (let i = 0; i < num; i++) {
-        // Shift hue based on iteration, add base hue so first color is theme-adjacent
         const shiftedH = (h + shiftAmount * i) % 360;
         palette.push(hslToHex(shiftedH, pastelS, pastelL));
     }
@@ -1007,8 +629,9 @@ window.onload = async () => {
         if(!db.clients) db.clients = [];
         if(!db.projects) db.projects = [];
         if(!db.savedPayAmts) db.savedPayAmts = {};
+        if(!db.extras) db.extras = []; // 防止舊資料崩潰
         
-        if (db.sites.length > 0 && db.projects.length === 0) {
+        if (db.sites && db.sites.length > 0 && db.projects.length === 0) {
             const uniqueNames = [...new Set(db.sites.map(s => s.name))];
             if (uniqueNames.length > 0) {
                 const defaultClient = { id: 'c_legacy', name: '未分類案主' };
@@ -1069,6 +692,7 @@ async function syncCloud(isPull) {
                 db = data;
                 if(!db.clients) db.clients = [];
                 if(!db.projects) db.projects = [];
+                if(!db.extras) db.extras = [];
                 renderAll();
             }
         } else {
@@ -1202,22 +826,7 @@ window.toggleAccordion = function(accId, btnId) {
 function renderDayWorkList(dateStr) {
     const container = document.getElementById('calendarDayList');
     container.innerHTML = "";
-
-    const btnRow = document.createElement('div');
-    btnRow.style.cssText = "display:flex; gap:10px; margin-bottom:15px; align-items:center;";
-    btnRow.innerHTML = `
-        <button class="btn" style="margin-top:0; flex:1;" onclick="openDailyWorkModal(null, '${dateStr}')">+ 新增本日案場</button>
-        <div style="display:flex; align-items:center;">
-            <label style="position:relative; width:50px; height:48px; margin:0; cursor:pointer; display:flex;" onclick="const d=document.getElementById('dDateFilter'); if(d.showPicker) d.showPicker();">
-                <div class="btn-ghost" style="width:100%; height:100%; border-radius:14px; display:flex; justify-content:center; align-items:center; pointer-events:none; border:1px solid var(--border);">
-                    <svg class="icon-svg" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
-                </div>
-                <input type="date" id="dDateFilter" onchange="if(!this.value) this.blur(); handleDailyDateChange(this.value);" style="position:absolute; width:1px; height:1px; opacity:0; border:none; padding:0; margin:0; left:50%; top:50%; z-index:-1;">
-            </label>
-        </div>
-    `;
-    container.appendChild(btnRow);
-
+    
     const records = db.sites.filter(s => s.date === dateStr);
     records.forEach(r => {
         let colorIdx = 0; let name = "未命名";
@@ -1318,10 +927,10 @@ function saveDailyWork() {
         let snapRate = 0;
         const existingW = existingSite ? existingSite.workers.find(w => w.id === wid) : null;
         if (existingW && existingW.snapshotRate !== undefined) {
-            snapRate = existingW.snapshotRate;
+            snapRate = existingW.snapshotRate; 
         } else {
             const master = db.workers.find(w => w.id === wid);
-            snapRate = master ? (Number(master.rate) * 8 || 0) : 0;
+            snapRate = master ? (Number(master.rate) * 8 || 0) : 0; 
         }
         return { id: wid, snapshotRate: snapRate };
     });
@@ -1506,7 +1115,7 @@ function getWorkersWithStats() {
                 tags.add(p ? p.name : "未知");
             });
         }
-        return { ...w, pay: wage+exTotal, days, tags: Array.from(tags), show: (dFilter||filterProjectIds.length>0)?(wage>0||exTotal>0||days>0):true };
+        return { ...w, pay: wage+exTotal, days, tags: Array.from(tags).sort((a,b)=>a.localeCompare(b,'zh-TW')), show: (dFilter||filterProjectIds.length>0)?(wage>0||exTotal>0||days>0):true };
     });
     
     workers.sort((a,b) => {
@@ -1643,9 +1252,10 @@ function openWorkerModal(id) {
         const list = document.getElementById('wExtraList'); list.innerHTML = "";
         const grouped = {};
         extras.forEach(ex => {
-            if(!grouped[ex.name]) grouped[ex.name] = { count:0, total:0, name: ex.name };
-            grouped[ex.name].count++;
-            grouped[ex.name].total += parseInt(ex.amount);
+            const dispName = ex.name === '加班' ? '加班' : ex.name;
+            if(!grouped[dispName]) grouped[dispName] = { count:0, total:0, name: dispName };
+            grouped[dispName].count++;
+            grouped[dispName].total += parseInt(ex.amount);
         });
         Object.values(grouped).forEach(g => {
              list.innerHTML += `
@@ -1668,6 +1278,7 @@ function openWorkerModal(id) {
     }
     openModal('modalWorker');
 }
+
 function saveWorker() {
     const id = document.getElementById('wId').value;
     const name = document.getElementById('wName').value;
@@ -1909,7 +1520,6 @@ function saveMultiExtra() {
     saveDB(); closeModal('modalMultiExtra'); renderWorkerList();
 }
 
-/* --- [需求9] 圓餅圖動態分析 --- */
 function openPieChart() {
     const ym = `${curDate.getFullYear()}-${String(curDate.getMonth()+1).padStart(2,'0')}`;
     const dFilter = document.getElementById('wDateFilter').value;
@@ -1918,10 +1528,8 @@ function openPieChart() {
     let total = 0;
     const itemMap = {};
 
-    // 1. 取得受篩選器影響的有效師傅
     const validWids = db.workers.filter(w => !search || w.name.toLowerCase().includes(search)).map(w => w.id);
 
-    // 2. 過濾案場薪資
     let targetSites = db.sites.filter(s => s.date.startsWith(ym));
     if(dFilter) targetSites = targetSites.filter(s => s.date === dFilter);
     if(filterProjectIds.length > 0) targetSites = targetSites.filter(s => filterProjectIds.includes(s.projectId));
@@ -1936,13 +1544,12 @@ function openPieChart() {
         });
         
         if(sWage > 0) {
-            if(!itemMap[pName]) itemMap[pName] = { amount: 0, label: pName }; // 暫不分配顏色
+            if(!itemMap[pName]) itemMap[pName] = { amount: 0, label: pName };
             itemMap[pName].amount += sWage;
             total += sWage;
         }
     });
 
-    // 3. 過濾支付細項 (包含加班)
     const mExtras = db.extras.filter(e => e.date.startsWith(ym));
     let validEx = mExtras.filter(e => {
         if(!validWids.includes(e.wid)) return false;
@@ -1957,29 +1564,25 @@ function openPieChart() {
     validEx.forEach(e => {
         const eName = e.name === '加班' ? '加班費' : e.name; 
         if(!itemMap[eName]) {
-            itemMap[eName] = { amount: 0, label: eName }; // 暫不分配顏色
+            itemMap[eName] = { amount: 0, label: eName };
         }
         itemMap[eName].amount += Number(e.amount);
         total += Number(e.amount);
     });
 
-    // --- NEW Logic for v10-5 ---
     const sortedItems = Object.values(itemMap).filter(x => x.amount > 0).sort((a,b) => b.amount - a.amount);
     const numColors = sortedItems.length;
 
-    // 4. 動態生成對應主題色的粉彩色盤
     const dynamicPalette = generateThemePalette(numColors);
 
-    // 5. 分配顏色給項目
     sortedItems.forEach((item, index) => {
         item.color = dynamicPalette[index];
     });
 
-    // 6. 計算與渲染圓餅圖
     let gradientStr = [];
     let currentPct = 0;
     let legendHtml = '';
-    const gap = 1.0; // 圓餅圖細線間距 simulation
+    const gap = 1.0; 
 
     if(total === 0) {
         document.getElementById('pieChartElement').style.background = '#EEE';
@@ -1990,8 +1593,7 @@ function openPieChart() {
             const start = currentPct;
             const end = currentPct + pct;
 
-            // conic gradient simulation with white lines
-            if (pct > gap * 2) { // 只有夠大的區塊才畫白線間隔
+            if (pct > gap * 2) { 
                 gradientStr.push(`var(--bg-card) ${start}%`, `var(--bg-card) ${start + gap/2}%`, `${item.color} ${start + gap/2}%`, `${item.color} ${end - gap/2}%`, `var(--bg-card) ${end - gap/2}%`, `var(--bg-card) ${end}%`);
             } else {
                 gradientStr.push(`${item.color} ${start}%`, `${item.color} ${end}%`);
@@ -1999,7 +1601,6 @@ function openPieChart() {
 
             currentPct += pct;
             
-            // [需求5] Fine print/细体字 legend
             legendHtml += `
                 <div style="display:flex; justify-content:space-between; align-items:center; padding:5px 0;">
                     <div style="display:flex; align-items:center; gap:6px;">
@@ -2018,8 +1619,43 @@ function openPieChart() {
     openModal('modalPieChart');
 }
 
+function openPersonalCalendar(wid) {
+    if(!wid) return;
+    const w = db.workers.find(x => x.id === wid);
+    if(!w) return;
+    document.getElementById('pcTitle').innerText = `${curDate.getFullYear()}年${curDate.getMonth()+1}月 - ${w.name}`;
+    const list = document.getElementById('pcList');
+    list.innerHTML = "";
+    const ym = `${curDate.getFullYear()}-${String(curDate.getMonth()+1).padStart(2,'0')}`;
+    const daysInM = new Date(curDate.getFullYear(), curDate.getMonth()+1, 0).getDate();
+    const mSites = db.sites.filter(s => s.date.startsWith(ym) && s.workers.some(sw => sw.id === wid));
+    const mExtras = db.extras.filter(e => e.wid === wid && e.date.startsWith(ym));
+    
+    for(let d=1; d<=daysInM; d++) {
+        const dateStr = `${ym}-${String(d).padStart(2,'0')}`;
+        const dSites = mSites.filter(s => s.date === dateStr);
+        const dExtras = mExtras.filter(e => e.date === dateStr);
+        if(dSites.length===0 && dExtras.length===0) continue;
+        
+        let html = "";
+        dSites.forEach(s => {
+            const p = (db.projects||[]).find(x => x.id === s.projectId);
+            const sw = s.workers.find(x => x.id === wid);
+            html += `<div class="p-cal-site"><b>${p?p.name:'未命名'}</b> <span style="color:#888">($${sw.snapshotRate})</span></div>`;
+        });
+        dExtras.forEach(e => {
+            const noteText = e.note ? ` <span style="color:var(--text-sub); font-size:0.85em;">${e.note}</span>` : '';
+            html += `<div class="p-cal-extra">${e.name}${noteText} $${e.amount}</div>`;
+        });
+        
+        const row = document.createElement('div');
+        row.className = 'p-cal-row';
+        row.innerHTML = `<div class="p-cal-date">${d}日</div><div class="p-cal-content">${html}</div>`;
+        list.appendChild(row);
+    }
+    openModal('modalPersonalCal');
+}
 
-/* --- Core / UI Helpers --- */
 function switchPage(pid) {
     document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
     document.getElementById('tab-'+pid).classList.add('active');
