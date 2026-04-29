@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <title>工程帳本 Ultimate v10-11</title>
+    <title>工程帳本 Ultimate v11-1</title>
     <style>
         /* --- 1. 核心變數 --- */
         :root {
@@ -50,7 +50,10 @@
         .day-cell.selected .day-num { background: #E0E0E0; color: #333; font-weight: bold; } 
         .is-weekend { color: var(--danger); }
         
+        /* [修改9] 夜間模式下的標籤顏色 */
         .site-tag { width: 95%; max-width: 100%; font-size: 10px; padding: 3px 6px; border-radius: 8px; color: white; margin-bottom: 1.5px; text-align: center; font-weight: bold; line-height: 1.2; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; pointer-events: none; }
+        .worker-tag { color: white; }
+        [data-mode="dark"] .site-tag, [data-mode="dark"] .worker-tag { color: #000000 !important; font-weight: 800; }
 
         /* Dashboard */
         .dashboard-row { display: flex; gap: 12px; margin-bottom: 16px; }
@@ -74,6 +77,8 @@
         
         .input-f { width: 100%; padding: 14px; border: 1px solid var(--border); border-radius: 12px; font-size: 16px; margin-bottom: 12px; background: var(--bg-std); color: var(--text-main); outline: none; }
         .input-f:focus { border-color: var(--primary); background: var(--bg-card); }
+        /* 唯讀狀態樣式 */
+        .input-f:read-only { background: var(--border); color: var(--text-sub); cursor: not-allowed; }
 
         /* Picker & Overlay */
         .overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 2000; display: none; opacity: 0; transition: opacity 0.2s; align-items: center; justify-content: center; }
@@ -109,8 +114,10 @@
         .icon-svg-sm { width: 16px; height: 16px; stroke: currentColor; fill: none; stroke-width: 2; }
         
         .chk-row { display: flex; justify-content: space-between; align-items: center; padding: 12px 5px; border-bottom: 1px dashed var(--border); }
-        .chk-row input[type="checkbox"] { width: 22px; height: 22px; accent-color: var(--primary); }
+        /* [修改10] 篩選器勾選框顏色統一為主題色 */
+        .chk-row input[type="checkbox"], #ssList input[type="checkbox"] { width: 22px; height: 22px; accent-color: var(--primary); }
         .chk-row.disabled-row { color: var(--text-disabled); }
+        
         .fab-btn { position: fixed; bottom: calc(85px + var(--safe-bottom)); right: 20px; width: 56px; height: 56px; border-radius: 50%; background: #263238; color: white; border: none; box-shadow: 0 6px 20px rgba(0,0,0,0.25); display: flex; align-items: center; justify-content: center; z-index: 90; }
 
         .p-cal-row { display: flex; gap: 10px; padding: 10px 0; border-bottom: 1px solid var(--border); }
@@ -414,7 +421,7 @@
                     <div style="font-size:0.85rem; color:var(--text-sub); line-height:1.6">
                         工天：<span id="wWorkDays">0</span> 天<br>
                         工資：$<span id="wWorkPay">0</span> (依上工日薪資)<br>
-                        支付：$<span id="wExtraTotal">0</span>
+                        其他：$<span id="wExtraTotal">0</span>
                     </div>
                     <div style="border-top:1px solid var(--border); margin-top:5px; padding-top:5px; font-weight:800; font-size:1.1rem; text-align:right;">
                         總計：$<span id="wFinalPay">0</span>
@@ -432,8 +439,8 @@
                             <option value="">(無案場)</option>
                         </select>
                         <input id="exName" list="extraTypes" class="input-f" placeholder="項目 (可選或輸入)" style="margin-bottom:5px">
-                        <input id="exNote" class="input-f" placeholder="備註 (選填)" style="margin-bottom:5px">
                         <input id="exAmt" type="number" class="input-f" placeholder="金額" style="margin-bottom:5px">
+                        <input id="exNote" class="input-f" placeholder="備註 (選填)" style="margin-bottom:5px">
                         <button id="btnAddExtraAction" class="btn" style="padding:8px; font-size:14px; margin:0;" onclick="saveOneExtra()">加入</button>
                     </div>
                     <div id="wExtraList" style="max-height:160px; overflow-y:auto; border:1px solid var(--border); padding:5px;"></div>
@@ -499,8 +506,8 @@
                 
                 <div id="meMultiFields" style="display:none;">
                     <input id="meName" list="extraTypes" class="input-f" placeholder="項目 (可選或輸入)" style="margin-bottom:5px">
-                    <input id="meNote" class="input-f" placeholder="備註 (選填)" style="margin-bottom:5px">
-                    <input id="meAmt" type="number" class="input-f" placeholder="金額" style="margin-bottom:12px">
+                    <input id="meAmt" type="number" class="input-f" placeholder="金額" style="margin-bottom:5px">
+                    <input id="meNote" class="input-f" placeholder="備註 (選填)" style="margin-bottom:12px">
                 </div>
                 
                 <div id="meOvertimeFields" style="display:flex; gap:10px; margin-bottom:12px;">
@@ -531,16 +538,17 @@
             <div class="modal-content-scroll" style="display:flex; flex-direction:column;">
                 <h3 style="margin-top:0; margin-bottom:15px; text-align:center;">支出分析</h3>
 
-                <div style="display:flex; justify-content:center; align-items:center; margin-bottom:15px;">
-                    <div id="pieChartElement" style="width:200px; height:200px; position:relative; flex-shrink:0;">
+                <div style="display:flex; justify-content:center; align-items:center; margin-bottom:20px;">
+                    <div id="pieChartElement" style="width:220px; height:220px; position:relative; flex-shrink:0; filter: drop-shadow(0px 4px 6px rgba(0,0,0,0.15));">
                     </div>
                 </div>
 
-                <div id="pieLegendBottom" style="display:flex; flex-direction:column; margin-bottom:15px; border-top:1px solid var(--border); padding-top:10px;">
+                <div id="pieLegendBottom" style="display:flex; flex-direction:column; margin-bottom:15px; padding:0 5px;">
                 </div>
 
                 <div style="text-align:right; font-size:1.1rem; color:var(--text-main); font-weight:bold; border-top:1px solid var(--border); padding-top:10px;">
-                    總支出: $<span id="pieTotalDisplay">0</span>
+                    總支出: $<span id="pieTotalDisplay">0</span><br>
+                    <span style="font-size:0.85rem; color:var(--text-sub); font-weight:400;">(含預付金額)</span>
                 </div>
             </div>
         </div>
@@ -558,7 +566,6 @@ function rgbToHex(r, g, b) {
     return "#" + (1 << 24 | r << 16 | g << 8 | b).toString(16).slice(1).toUpperCase();
 }
 
-// 根據起始與結束色，依照細項數量均勻分割出漸層色盤
 function getGradientColors(startHex, endHex, steps) {
     if (steps <= 0) return [];
     if (steps === 1) return [startHex];
@@ -577,15 +584,14 @@ function getGradientColors(startHex, endHex, steps) {
     return colors;
 }
 
-// 您指定的各主題專屬漸層起訖色
 const THEMES = [
-    {r:86,g:158,b:138,hex:'#569E8A', pieStart:'#9BCEC2', pieEnd:'#99B1DD'}, // 0.莫蘭迪綠
-    {r:234,g:193,b:80,hex:'#EAC150', pieStart:'#E6DE94', pieEnd:'#E6BC8E'}, // 1.暖金黃
-    {r:90,g:179,b:194,hex:'#5AB3C2', pieStart:'#97D3E1', pieEnd:'#99B1DD'}, // 2.天空藍
-    {r:240,g:141,b:166,hex:'#F08DA6', pieStart:'#EAA1BC', pieEnd:'#F5D89C'}, // 3.櫻花粉
-    {r:157,g:131,b:180,hex:'#9D83B4', pieStart:'#B7AFCB', pieEnd:'#DDAECD'}, // 4.薰衣草紫
-    {r:224,g:112,b:111,hex:'#E0706F', pieStart:'#EE9FA0', pieEnd:'#E9E49D'}, // 5.珊瑚紅
-    {r:106,g:133,b:209,hex:'#6A85D1', pieStart:'#9AB6D5', pieEnd:'#BDBDDE'}  // 6.丹寧藍
+    {r:86,g:158,b:138,hex:'#569E8A', pieStart:'#9BCEC2', pieEnd:'#99B1DD'}, 
+    {r:234,g:193,b:80,hex:'#EAC150', pieStart:'#E6DE94', pieEnd:'#E6BC8E'}, 
+    {r:90,g:179,b:194,hex:'#5AB3C2', pieStart:'#97D3E1', pieEnd:'#99B1DD'}, 
+    {r:240,g:141,b:166,hex:'#F08DA6', pieStart:'#EAA1BC', pieEnd:'#F5D89C'}, 
+    {r:157,g:131,b:180,hex:'#9D83B4', pieStart:'#B7AFCB', pieEnd:'#DDAECD'}, 
+    {r:224,g:112,b:111,hex:'#E0706F', pieStart:'#EE9FA0', pieEnd:'#E9E49D'}, 
+    {r:106,g:133,b:209,hex:'#6A85D1', pieStart:'#9AB6D5', pieEnd:'#BDBDDE'}  
 ];
 
 let db = {
@@ -644,7 +650,7 @@ window.onload = async () => {
         if(db.settings.gasUrl) {
             document.getElementById('gasUrl').value = db.settings.gasUrl;
             document.getElementById('gasLock').checked = db.settings.gasLock;
-            toggleGasLock();
+            toggleGasLock(); // 確保重新載入時也執行鎖定
             await syncCloud(true);
         }
     } catch (e) {
@@ -656,6 +662,14 @@ window.onload = async () => {
 function saveDB() {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(db));
     syncCloud(false); 
+}
+
+// [需求8] 鎖定網址設定
+function toggleGasLock() {
+    const isLocked = document.getElementById('gasLock').checked;
+    document.getElementById('gasUrl').readOnly = isLocked;
+    db.settings.gasLock = isLocked;
+    saveDB();
 }
 
 async function syncCloud(isPull) {
@@ -1130,7 +1144,7 @@ function renderWorkerList() {
         w.tags.forEach(tagName => {
             const p = (db.projects||[]).find(proj => proj.name === tagName);
             const color = p ? (THEMES[p.colorIdx] || THEMES[0]).hex : '#888';
-            tagsHtml += `<span style="font-size:0.75rem; background:${color}; color:white; padding:2px 6px; border-radius:4px; margin-left:5px;">${tagName}</span>`;
+            tagsHtml += `<span class="worker-tag" style="font-size:0.75rem; background:${color}; padding:2px 6px; border-radius:4px; margin-left:5px;">${tagName}</span>`;
         });
         
         card.innerHTML = `<div><b>${star}${nameText}${tagsHtml}</b><div style="font-size:0.85rem;color:var(--text-sub);margin-top:4px">${w.days} 天上工</div></div><div style="font-size:1.2rem;font-weight:800">$${w.pay.toLocaleString()}</div>`;
@@ -1304,6 +1318,7 @@ function updateExtraSiteSelect(dateInputId, selectId) {
     });
     select.innerHTML = html;
 }
+
 function toggleAddExtra(forceClose) {
     const box = document.getElementById('addExtraBox');
     if (box.style.display === 'block' || forceClose) {
@@ -1324,14 +1339,22 @@ function toggleAddExtra(forceClose) {
         document.getElementById('btnAddExtraAction').innerText = "加入";
     }
 }
+
 function saveOneExtra() {
     const wid = document.getElementById('wId').value;
     const date = document.getElementById('exDate').value;
     const siteId = document.getElementById('exSite').value;
     const name = document.getElementById('exName').value;
     const note = document.getElementById('exNote').value;
-    const amount = document.getElementById('exAmt').value;
-    if(!name || !amount) return;
+    const amount = Number(document.getElementById('exAmt').value);
+    if(!name || isNaN(amount)) return;
+    
+    // [需求12] 領字防呆機制
+    if(name.includes('領') && amount > 0) {
+        if(!confirm(`提醒：項目名稱包含「領」，通常為預支扣款，應輸入負數。\n\n您確定要存為「正數」嗎？`)) {
+            return;
+        }
+    }
     
     if (editingExtraId) {
         const idx = db.extras.findIndex(e => e.id === editingExtraId);
@@ -1477,8 +1500,16 @@ function saveMultiExtra() {
     if(mode === 'multi') {
         const name = document.getElementById('meName').value;
         const note = document.getElementById('meNote').value;
-        const amt = document.getElementById('meAmt').value;
-        if(!name || !amt) return alert('資料不完整');
+        const amt = Number(document.getElementById('meAmt').value);
+        if(!name || isNaN(amt)) return alert('資料不完整');
+        
+        // [需求12] 領字防呆機制
+        if(name.includes('領') && amt > 0) {
+            if(!confirm(`提醒：項目名稱包含「領」，通常為預支扣款，應輸入負數。\n\n您確定要存為「正數」嗎？`)) {
+                return;
+            }
+        }
+        
         chks.forEach(c => db.extras.push({ id:'e'+Date.now()+Math.random(), wid: c.value, date, siteId, name, note, amount: amt }));
     } else if(mode === 'overtime') {
         if(!siteId) return alert('加班必須選擇案場');
@@ -1500,7 +1531,7 @@ function saveMultiExtra() {
 }
 
 // ----------------------------------------------------
-// [全新動態圓餅圖邏輯] 移除側邊欄、精準幾何定位 % 數、獨立指定漸層色彩
+// [全新動態圓餅圖邏輯] SVG 完美白線、精選粉彩色盤、水平正向數字、排除負數
 // ----------------------------------------------------
 function getCoordinatesForPercent(percent, radius = 1) {
     const x = Math.cos(2 * Math.PI * percent) * radius;
@@ -1508,7 +1539,6 @@ function getCoordinatesForPercent(percent, radius = 1) {
     return [x, y];
 }
 
-// [修改 1-7] 抓取各主題專屬的漸層起訖色，切出精準的漸層色塊
 function openPieChart() {
     const ym = `${curDate.getFullYear()}-${String(curDate.getMonth()+1).padStart(2,'0')}`;
     const dFilter = document.getElementById('wDateFilter').value;
@@ -1542,6 +1572,7 @@ function openPieChart() {
     const mExtras = db.extras.filter(e => e.date.startsWith(ym));
     let validEx = mExtras.filter(e => {
         if(!validWids.includes(e.wid)) return false;
+        if(Number(e.amount) < 0) return false; // [需求6] 圓餅圖完全排除負數
         if(dFilter && e.date !== dFilter) return false;
         if(filterProjectIds.length > 0) {
            const linkedSite = db.sites.find(s => s.id === e.siteId);
@@ -1560,18 +1591,17 @@ function openPieChart() {
     });
 
     const sortedItems = Object.values(itemMap).filter(x => x.amount > 0).sort((a,b) => b.amount - a.amount);
-    const numColors = sortedItems.length;
 
-    // 取得當前主題設定的專屬漸層範圍，若無則預設為第一組
     const themeIdx = db.settings.theme || 0;
     const themeConfig = THEMES[themeIdx];
-    const dynamicPalette = getGradientColors(themeConfig.pieStart, themeConfig.pieEnd, numColors);
+    const dynamicPalette = getGradientColors(themeConfig.pieStart, themeConfig.pieEnd, sortedItems.length);
 
     sortedItems.forEach((item, index) => {
         item.color = dynamicPalette[index];
     });
 
-    let svgHtml = `<svg viewBox="-1.05 -1.05 2.1 2.1" style="width:100%; height:100%; transform: rotate(-90deg); overflow: visible;">`;
+    // 擴大 viewBox 以容納外圍文字 (-1.35 到 1.35)
+    let svgHtml = `<svg viewBox="-1.35 -1.35 2.7 2.7" style="width:100%; height:100%; transform: rotate(-90deg); overflow: visible; filter: drop-shadow(0px 6px 12px rgba(0,0,0,0.15));">`;
     let legendBottomHtml = '';
     let cumulativePercent = 0;
 
@@ -1584,32 +1614,31 @@ function openPieChart() {
             const sliceStartPercent = cumulativePercent; 
             const pctText = (percent * 100).toFixed(0);
 
-            // 1. 繪製精準的 SVG 區塊，使用 stroke 創造完美白線分離
             if (percent === 1) {
-                svgHtml += `<circle cx="0" cy="0" r="1" fill="${item.color}" stroke="var(--bg-card)" stroke-width="0.04" />`;
+                svgHtml += `<circle cx="0" cy="0" r="1" fill="${item.color}" stroke="var(--bg-card)" stroke-width="0.02" />`;
             } else {
                 const [startX, startY] = getCoordinatesForPercent(sliceStartPercent);
                 cumulativePercent += percent;
                 const [endX, endY] = getCoordinatesForPercent(cumulativePercent);
                 const largeArcFlag = percent > 0.5 ? 1 : 0;
                 const pathData = `M 0 0 L ${startX} ${startY} A 1 1 0 ${largeArcFlag} 1 ${endX} ${endY} Z`;
-                svgHtml += `<path d="${pathData}" fill="${item.color}" stroke="var(--bg-card)" stroke-width="0.04" stroke-linejoin="round" />`;
+                svgHtml += `<path d="${pathData}" fill="${item.color}" stroke="var(--bg-card)" stroke-width="0.02" stroke-linejoin="round" />`;
 
-                // 2. 幾何座標定位，放置水平正向的數字 (%) 
-                if (percent > 0.03) { // 區塊大於 3% 才顯示數字，避免擁擠
+                // [需求3] 幾何座標定位，將文字放置於圓環外側 (半徑 1.15)
+                if (percent > 0.03) { 
                     const labelPercent = sliceStartPercent + (percent / 2);
-                    const labelRadius = 0.75; 
+                    const labelRadius = 1.15; 
                     const [labX, labY] = getCoordinatesForPercent(labelPercent, labelRadius);
                     
-                    // 為了抵銷外層 SVG 的 rotate(-90deg)，需在文字上執行反向旋轉 transform="rotate(90, X, Y)"
-                    svgHtml += `<text x="${labX}" y="${labY}" fill="#444" font-size="0.16px" font-weight="800" text-anchor="middle" dominant-baseline="central" transform="rotate(90, ${labX}, ${labY})">${pctText}%</text>`;
+                    // 抵銷外層 SVG 的 rotate(-90deg)
+                    svgHtml += `<text x="${labX}" y="${labY}" fill="var(--text-sub)" font-size="0.14px" font-weight="500" text-anchor="middle" dominant-baseline="central" transform="rotate(90, ${labX}, ${labY})">${pctText}%</text>`;
                 }
             }
 
-            // 下方清單 (粗體與金額)
             const detailPctText = (percent * 100).toFixed(1);
+            // 移除虛線 bottom-border
             legendBottomHtml += `
-                <div style="display:flex; justify-content:space-between; align-items:center; padding:8px 0; border-bottom:1px dashed var(--border);">
+                <div style="display:flex; justify-content:space-between; align-items:center; padding:8px 0;">
                     <div style="display:flex; align-items:center; gap:8px;">
                         <div style="width:14px; height:14px; background:${item.color}; border-radius:2px;"></div>
                         <span style="font-weight: 600; font-size:0.95rem;">${item.label} <span style="font-weight: normal; color:var(--text-sub); font-size:0.9em;">(${detailPctText}%)</span></span>
@@ -1619,8 +1648,8 @@ function openPieChart() {
             `;
         });
         
-        // 畫一個中心圓洞
-        svgHtml += `<circle cx="0" cy="0" r="0.55" fill="var(--bg-card)" />`;
+        // 內圈白洞縮小
+        svgHtml += `<circle cx="0" cy="0" r="0.38" fill="var(--bg-card)" />`;
         svgHtml += `</svg>`;
         
         document.getElementById('pieChartElement').innerHTML = svgHtml;
@@ -1630,7 +1659,6 @@ function openPieChart() {
     document.getElementById('pieTotalDisplay').innerText = total.toLocaleString();
     openModal('modalPieChart');
 }
-// ----------------------------------------------------
 
 function openPersonalCalendar(wid) {
     if(!wid) return;
