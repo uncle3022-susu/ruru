@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <title>工程帳本 Ultimate v10-7</title>
+    <title>工程帳本 Ultimate v10-8</title>
     <style>
         /* --- 1. 核心變數 --- */
         :root {
@@ -534,11 +534,14 @@
                 <div style="display:flex; align-items:center; gap:20px; margin-bottom:15px;">
                     <div id="pieChartElement" style="width:130px; height:130px; position:relative; flex-shrink:0;">
                     </div>
-                    <div id="pieLegend" style="flex:1; display:flex; flex-direction:column; gap:4px; font-size:0.9rem; max-height:160px; overflow-y:auto; padding-right:5px;">
+                    <div id="pieLegendSide" style="flex:1; display:flex; flex-direction:column; gap:4px; max-height:140px; overflow-y:auto; padding-right:5px;">
                     </div>
                 </div>
 
-                <div style="text-align:right; font-size:1rem; color:var(--text-main); font-weight:bold; border-top:1px solid var(--border); padding-top:10px;">
+                <div id="pieLegendBottom" style="display:flex; flex-direction:column; margin-bottom:15px;">
+                </div>
+
+                <div style="text-align:right; font-size:1.1rem; color:var(--text-main); font-weight:bold; border-top:1px solid var(--border); padding-top:10px;">
                     總支出: $<span id="pieTotalDisplay">0</span>
                 </div>
             </div>
@@ -546,6 +549,65 @@
     </div>
 
 <script>
+// RGB to HSL Helper
+function rgbToHsl(r, g, b) {
+    r /= 255; g /= 255; b /= 255;
+    let max = Math.max(r, g, b), min = Math.min(r, g, b);
+    let h, s, l = (max + min) / 2;
+    if (max === min) { h = s = 0; }
+    else {
+        let d = max - min;
+        s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+        switch (max) {
+            case r: h = (g - b) / d + (g < b ? 6 : 0); break;
+            case g: h = (b - r) / d + 2; break;
+            case b: h = (r - g) / d + 4; break;
+        }
+        h /= 6;
+    }
+    return [h * 360, s * 100, l * 100];
+}
+
+// HSL to RGB hex Helper
+function hslToHex(h, s, l) {
+    s /= 100; l /= 100;
+    let c = (1 - Math.abs(2 * l - 1)) * s,
+        x = c * (1 - Math.abs((h / 60) % 2 - 1)),
+        m = l - c / 2, r = 0, g = 0, b = 0;
+    if (0 <= h && h < 60) { r = c; g = x; b = 0; }
+    else if (60 <= h && h < 120) { r = x; g = c; b = 0; }
+    else if (120 <= h && h < 180) { r = 0; g = c; b = x; }
+    else if (180 <= h && h < 240) { r = 0; g = x; b = c; }
+    else if (240 <= h && h < 300) { r = x; g = 0; b = c; }
+    else if (300 <= h && h < 360) { r = c; g = 0; b = x; }
+    const toHex = x => { const hex = Math.round((x + m) * 255).toString(16); return hex.length === 1 ? '0' + hex : hex; };
+    return `#${toHex(r)}${toHex(g)}${toHex(b)}`;
+}
+
+// 生成連動主題的粉彩色盤
+function generateThemePalette(num) {
+    if (num === 0) return [];
+    const rs = getComputedStyle(document.documentElement);
+    let r = parseInt(rs.getPropertyValue('--theme-r'));
+    let g = parseInt(rs.getPropertyValue('--theme-g'));
+    let b = parseInt(rs.getPropertyValue('--theme-b'));
+    
+    if (isNaN(r) || isNaN(g) || isNaN(b)) { r = 86; g = 158; b = 138; }
+
+    let [h, s, l] = rgbToHsl(r, g, b);
+    const pastelS = 65; 
+    const pastelL = 75; 
+
+    let palette = [];
+    const shiftAmount = 360 / Math.max(num, 1); 
+
+    for (let i = 0; i < num; i++) {
+        const shiftedH = (h + shiftAmount * i) % 360;
+        palette.push(hslToHex(shiftedH, pastelS, pastelL));
+    }
+    return palette;
+}
+
 const THEMES = [{r:86,g:158,b:138,hex:'#569E8A'},{r:234,g:193,b:80,hex:'#EAC150'},{r:90,g:179,b:194,hex:'#5AB3C2'},{r:240,g:141,b:166,hex:'#F08DA6'},{r:157,g:131,b:180,hex:'#9D83B4'},{r:224,g:112,b:111,hex:'#E0706F'},{r:106,g:133,b:209,hex:'#6A85D1'}];
 
 let db = {
@@ -568,7 +630,7 @@ window.onload = async () => {
         if(!db.clients) db.clients = [];
         if(!db.projects) db.projects = [];
         if(!db.savedPayAmts) db.savedPayAmts = {};
-        if(!db.extras) db.extras = []; // 防止舊資料崩潰
+        if(!db.extras) db.extras = []; 
         
         if (db.sites && db.sites.length > 0 && db.projects.length === 0) {
             const uniqueNames = [...new Set(db.sites.map(s => s.name))];
@@ -1460,10 +1522,8 @@ function saveMultiExtra() {
 }
 
 // ----------------------------------------------------
-// [全新動態圓餅圖邏輯] 包含 SVG 完美白線、精選粉彩色盤與特定格式
+// [全新動態圓餅圖邏輯] SVG 完美無縫白線、排版全面升級
 // ----------------------------------------------------
-
-// 計算角度轉換為 x, y 座標的數學公式
 function getCoordinatesForPercent(percent) {
     const x = Math.cos(2 * Math.PI * percent);
     const y = Math.sin(2 * Math.PI * percent);
@@ -1522,7 +1582,7 @@ function openPieChart() {
 
     const sortedItems = Object.values(itemMap).filter(x => x.amount > 0).sort((a,b) => b.amount - a.amount);
 
-    // 經典高級粉彩色盤，保證柔和美麗
+    // 高級百搭粉彩色盤
     const pastelColors = ['#FFB5A7', '#FFD6A5', '#FDFFB6', '#CAFFBF', '#9BF6FF', '#A0C4FF', '#BDB2FF', '#FFC6FF', '#F0E6EF', '#E4F1EE', '#FFDFD3'];
 
     sortedItems.forEach((item, index) => {
@@ -1530,17 +1590,19 @@ function openPieChart() {
     });
 
     let svgHtml = `<svg viewBox="-1.05 -1.05 2.1 2.1" style="width:100%; height:100%; transform: rotate(-90deg); overflow: visible;">`;
-    let legendHtml = '';
+    let legendSideHtml = '';
+    let legendBottomHtml = '';
     let cumulativePercent = 0;
 
     if(total === 0) {
         document.getElementById('pieChartElement').innerHTML = `<div style="width:100%; height:100%; border-radius:50%; background:#EEE;"></div>`;
-        document.getElementById('pieLegend').innerHTML = '<div style="text-align:center;color:var(--text-sub);padding:20px; font-weight:300;">無支出紀錄</div>';
+        document.getElementById('pieLegendSide').innerHTML = '<div style="text-align:center;color:var(--text-sub);padding:20px; font-weight:300;">無支出紀錄</div>';
+        document.getElementById('pieLegendBottom').innerHTML = '';
     } else {
         sortedItems.forEach(item => {
             const percent = item.amount / total;
             
-            // 繪製完美無縫的 SVG 切片
+            // 繪製 SVG 圓餅
             if (percent === 1) {
                 svgHtml += `<circle cx="0" cy="0" r="1" fill="${item.color}" stroke="var(--bg-card)" stroke-width="0.04" />`;
             } else {
@@ -1548,33 +1610,42 @@ function openPieChart() {
                 cumulativePercent += percent;
                 const [endX, endY] = getCoordinatesForPercent(cumulativePercent);
                 const largeArcFlag = percent > 0.5 ? 1 : 0;
-                // Path: M (move to center) L (line to start edge) A (arc to end edge) Z (close path back to center)
                 const pathData = `M 0 0 L ${startX} ${startY} A 1 1 0 ${largeArcFlag} 1 ${endX} ${endY} Z`;
-                // 使用 stroke 切割完美的白線
                 svgHtml += `<path d="${pathData}" fill="${item.color}" stroke="var(--bg-card)" stroke-width="0.04" stroke-linejoin="round" />`;
             }
             
-            legendHtml += `
-                <div style="display:flex; justify-content:space-between; align-items:center; padding:8px 0; border-bottom:1px solid var(--border);">
+            const pctText = (percent * 100).toFixed(1);
+
+            // [排版升級] 旁側細項 (細體)
+            legendSideHtml += `
+                <div style="display:flex; justify-content:space-between; align-items:center; padding:4px 0;">
+                    <div style="display:flex; align-items:center; gap:6px;">
+                        <div style="width:10px; height:10px; background:${item.color}; border-radius:50%;"></div>
+                        <span style="font-weight: 300; font-size:0.9rem;">${item.label}</span>
+                    </div>
+                    <span style="color:var(--text-sub); font-size:0.9rem; font-weight: 300; margin-left:8px;">${pctText}%</span>
+                </div>
+            `;
+
+            // [排版升級] 下方粗體清單
+            legendBottomHtml += `
+                <div style="display:flex; justify-content:space-between; align-items:center; padding:8px 0; border-bottom:1px dashed var(--border);">
                     <div style="display:flex; align-items:center; gap:8px;">
-                        <div style="width:14px; height:14px; background:${item.color}; border-radius:50%;"></div>
-                        <span style="font-weight: 500;">${item.label}</span>
+                        <div style="width:14px; height:14px; background:${item.color}; border-radius:2px;"></div>
+                        <span style="font-weight: 600; font-size:0.95rem;">${item.label} <span style="font-weight: normal; color:var(--text-sub); font-size:0.9em;">(${pctText}%)</span></span>
                     </div>
-                    <div style="text-align:right;">
-                        <div style="font-weight: 600; color:var(--text-main);">$${item.amount.toLocaleString()}</div>
-                        <div style="color:var(--text-sub); font-size:0.85em; margin-top:2px;">${(percent * 100).toFixed(1)}%</div>
-                    </div>
+                    <div style="font-weight: 600; color:var(--text-main); font-size:1rem;">$${item.amount.toLocaleString()}</div>
                 </div>
             `;
         });
         
-        // 畫一個中心圓洞
+        // 畫一個中心圓洞，讓它變成環狀圖
         svgHtml += `<circle cx="0" cy="0" r="0.55" fill="var(--bg-card)" />`;
         svgHtml += `</svg>`;
         
         document.getElementById('pieChartElement').innerHTML = svgHtml;
-        document.getElementById('pieChartElement').style.background = 'transparent';
-        document.getElementById('pieLegend').innerHTML = legendHtml;
+        document.getElementById('pieLegendSide').innerHTML = legendSideHtml;
+        document.getElementById('pieLegendBottom').innerHTML = legendBottomHtml;
     }
     
     document.getElementById('pieTotalDisplay').innerText = total.toLocaleString();
