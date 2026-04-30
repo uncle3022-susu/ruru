@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <title>工程帳本 Ultimate v11-6</title>
+    <title>工程帳本 Ultimate v11-7</title>
     
     <link rel="apple-touch-icon" sizes="180x180" href="data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 180 180'%3E%3Crect width='180' height='180' rx='40' fill='%23569E8A'/%3E%3Ctext x='90' y='125' font-size='110' fill='white' text-anchor='middle' font-family='sans-serif' font-weight='bold'%3E工%3C/text%3E%3C/svg%3E">
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 180 180'%3E%3Crect width='180' height='180' rx='40' fill='%23569E8A'/%3E%3Ctext x='90' y='125' font-size='110' fill='white' text-anchor='middle' font-family='sans-serif' font-weight='bold'%3E工%3C/text%3E%3C/svg%3E">
@@ -63,7 +63,6 @@
         
         .site-tag { width: 95%; max-width: 100%; font-size: 10px; padding: 3px 6px; border-radius: 8px; color: white; margin-bottom: 1.5px; text-align: center; font-weight: bold; line-height: 1.2; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; pointer-events: none; }
         .worker-tag { color: white; }
-        /* 夜間模式字體不加粗 */
         [data-mode="dark"] .site-tag, [data-mode="dark"] .worker-tag { color: #000000 !important; font-weight: normal; }
 
         /* Dashboard */
@@ -226,7 +225,7 @@
                         
                         <input type="date" id="wDateFilter" 
                                style="position:absolute; width:1px; height:1px; opacity:0; border:none; padding:0; margin:0; left:50%;" 
-                               onchange="if(!this.value){ this.blur(); resetDateFilter(); } else { updateDateDisplayText(); renderWorkerList(); }">
+                               onchange="if(!this.value){ this.blur(); } updateDateDisplayText(); renderWorkerList();">
                     </label>
                     
                     <div id="btnDateReset" onclick="resetDateFilter();" style="display:none; padding:10px; cursor:pointer; color:var(--text-sub); flex-shrink:0; margin-left:5px;">
@@ -262,7 +261,7 @@
                     <span style="display:flex;align-items:center;gap:5px"><svg class="icon-svg-sm" viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg> 鎖定網址</span>
                     <input type="checkbox" id="gasLock" onchange="toggleGasLock()">
                 </div>
-                <input id="gasUrl" class="input-f" placeholder="Google Apps Script URL" onchange="saveGasUrl(this.value)">
+                <input id="gasUrl" class="input-f" placeholder="Google Apps Script URL" oninput="saveGasUrl(this.value)">
                 <div id="syncStatus" style="font-size:0.8rem; color:var(--text-sub); text-align:right;"></div>
             </div>
 
@@ -539,7 +538,7 @@
         </div>
     </div>
     
-    <div id="modalPieChart" class="overlay" style="z-index:2300;">
+    <div id="modalPieChart" class="overlay" style="z-index:2300; display: none;">
         <div class="modal-box" style="display: flex; flex-direction: column; max-height: 85vh;">
             <div class="modal-header">
                 <div class="modal-close" onclick="closeModal('modalPieChart')">
@@ -550,7 +549,9 @@
                 <h3 style="margin-top:0; margin-bottom:15px; text-align:center;">支出分析</h3>
 
                 <div style="display:flex; justify-content:center; align-items:center; margin-bottom:20px;">
-                    <div id="pieChartElement" style="width:240px; height:240px; position:relative; flex-shrink:0;"></div>
+                    <div style="width:240px; height:240px; position:relative; flex-shrink:0;">
+                        <div id="pieChartElement" style="width:100%; height:100%;"></div>
+                    </div>
                 </div>
 
                 <div id="pieLegendBottom" style="display:flex; flex-direction:column; padding:0 5px;">
@@ -621,7 +622,6 @@ window.onload = async () => {
         const local = localStorage.getItem(STORAGE_KEY);
         if(local) db = JSON.parse(local);
         
-        // 舊資料防呆機制
         if(!db.settings) db.settings = { theme: 0, gasUrl: '', gasLock: false, darkMode: false };
         if(!db.clients) db.clients = [];
         if(!db.projects) db.projects = [];
@@ -1346,6 +1346,7 @@ function updateExtraSiteSelect(dateInputId, selectId) {
     select.innerHTML = html;
 }
 
+// 個人支付：強制重置與防呆收合
 function toggleAddExtra(forceClose) {
     const box = document.getElementById('addExtraBox');
     if (box.style.display === 'block' || forceClose) {
@@ -1390,6 +1391,7 @@ function saveOneExtra() {
     const amount = Number(document.getElementById('exAmt').value);
     if(!name || isNaN(amount) || amount === 0) return;
     
+    // [需求8] 「領」字防呆提示字眼更新
     if(name.includes('領') && amount > 0) {
         if(!confirm(`項目名稱包含「領」字，通常為預付金額，已支付的金額請打負數。\n您是否仍存為正數？(待支付)`)) {
             return;
@@ -1543,6 +1545,7 @@ function saveMultiExtra() {
         const amt = Number(document.getElementById('meAmt').value);
         if(!name || isNaN(amt) || amt === 0) return alert('資料不完整');
         
+        // [需求8] 「領」字防呆
         if(name.includes('領') && amt > 0) {
             if(!confirm(`項目名稱包含「領」字，通常為預付金額，已支付的金額請打負數。\n您是否仍存為正數？(待支付)`)) return;
         }
@@ -1568,7 +1571,7 @@ function saveMultiExtra() {
 }
 
 // ----------------------------------------------------
-// [終極動態圓餅圖] SVG 原生實體濾鏡陰影 + 動態外推補償半徑
+// [終極動態圓餅圖] SVG 完美無縫白線、精確正向等距數字、實體濾鏡陰影
 // ----------------------------------------------------
 function getCoordinatesForPercent(percent, radius = 1) {
     const angle = 2 * Math.PI * (percent - 0.25);
@@ -1648,13 +1651,13 @@ function openPieChart() {
         document.getElementById('pieLegendBottom').innerHTML = '<div style="text-align:center;color:var(--text-sub);padding:20px; font-weight:300;">無支出紀錄</div>';
     } else {
         
-        // 使用原生 SVG 濾鏡產生乾淨的底部實體陰影，杜絕邊緣破綻
+        // [修改5] 畫一個 SVG 原生背景陰影 (縮小圓盤並向下偏移)，避免白圈與邊界外漏
         svgHtml += `
             <defs>
-                <filter id="shadowFilter" x="-20%" y="-20%" width="140%" height="140%">
-                    <feDropShadow dx="0" dy="0.08" stdDeviation="0.05" flood-opacity="0.15" />
-                </filter>
+                <filter id="shadowBlur"><feGaussianBlur stdDeviation="0.04"/></filter>
+                <clipPath id="pieClip"><circle cx="0" cy="0" r="0.995" /></clipPath>
             </defs>
+            <circle cx="0" cy="0.06" r="0.93" fill="rgba(0,0,0,0.12)" filter="url(#shadowBlur)" />
         `;
 
         let slicesHtml = '';
@@ -1677,11 +1680,12 @@ function openPieChart() {
                 const pathData = `M 0 0 L ${startX} ${startY} A 1 1 0 ${largeArcFlag} 1 ${endX} ${endY} Z`;
                 slicesHtml += `<path d="${pathData}" fill="${item.color}" />`;
 
+                // [修改6] 加粗白線並利用 Clip 裁切保證不超出邊界
                 if(numColors > 1) {
-                    linesHtml += `<line x1="0" y1="0" x2="${startX}" y2="${startY}" stroke="var(--bg-card)" stroke-width="0.04" stroke-linecap="round" />`;
+                    linesHtml += `<line x1="0" y1="0" x2="${startX}" y2="${startY}" stroke="var(--bg-card)" stroke-width="0.015" />`;
                 }
 
-                // 動態半徑補償：根據 Y 軸正向(下半圓)位置將文字推遠，抵銷 Bounding Box 高度差
+                // [修改7] 動態半徑補償：根據 Y 軸正向(下半圓)位置將文字推遠
                 if (percent > 0.03) { 
                     const labelPercent = sliceStartPercent + (percent / 2);
                     const ySine = Math.sin(2 * Math.PI * (labelPercent - 0.25));
@@ -1705,9 +1709,7 @@ function openPieChart() {
             `;
         });
         
-        // 將切片群組合併，並套用真實濾鏡陰影
-        svgHtml += `<g filter="url(#shadowFilter)">${slicesHtml}</g>`;
-        svgHtml += linesHtml;
+        svgHtml += `<g clip-path="url(#pieClip)">${slicesHtml}${linesHtml}</g>`;
         svgHtml += `<circle cx="0" cy="0" r="0.38" fill="var(--bg-card)" />`;
         svgHtml += textHtml;
         svgHtml += `</svg>`;
@@ -1717,7 +1719,11 @@ function openPieChart() {
     }
     
     document.getElementById('pieTotalDisplay').innerText = total.toLocaleString();
-    openModal('modalPieChart');
+    
+    // 確保點擊時浮動視窗正常顯示
+    const modal = document.getElementById('modalPieChart');
+    modal.style.display = 'flex';
+    setTimeout(() => modal.style.opacity = 1, 10);
 }
 
 function openPersonalCalendar(wid) {
