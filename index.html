@@ -5,7 +5,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <title>工程帳本 Ultimate v11-2</title>
+    <title>工程帳本 Ultimate v11-3</title>
+    
+    <link rel="apple-touch-icon" href="data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 180 180'%3E%3Crect width='180' height='180' rx='40' fill='%23569E8A'/%3E%3Ctext x='90' y='125' font-size='110' fill='white' text-anchor='middle' font-family='sans-serif' font-weight='bold'%3E工%3C/text%3E%3C/svg%3E">
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 180 180'%3E%3Crect width='180' height='180' rx='40' fill='%23569E8A'/%3E%3Ctext x='90' y='125' font-size='110' fill='white' text-anchor='middle' font-family='sans-serif' font-weight='bold'%3E工%3C/text%3E%3C/svg%3E">
+
     <style>
         /* --- 1. 核心變數 --- */
         :root {
@@ -24,11 +28,16 @@
             --border: #333333; --shadow: 0 4px 15px rgba(0,0,0,0.3);
         }
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; user-select: none; font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", Roboto, sans-serif; }
-        body { margin: 0; background: var(--bg-std); color: var(--text-main); padding-bottom: calc(90px + var(--safe-bottom)); overflow-x: hidden; transition: background 0.3s ease, color 0.3s ease; }
+        
+        /* [需求10] 網頁最上方強制留白 0.7cm */
+        body { margin: 0; background: var(--bg-std); color: var(--text-main); padding-top: calc(0.7cm + 0px); padding-bottom: calc(90px + var(--safe-bottom)); overflow-x: hidden; transition: background 0.3s ease, color 0.3s ease; }
+        .top-spacer { position: fixed; top: 0; left: 0; width: 100%; height: 0.7cm; background: var(--bg-std); z-index: 9999; }
 
         /* --- UI Components --- */
-        .app-header { position: sticky; top: 0; z-index: 50; background: rgba(var(--bg-card-rgb, 255,255,255), 0.8); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); padding: 10px 20px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid var(--border); }
+        /* [需求10] Header 下移 0.7cm */
+        .app-header { position: sticky; top: 0.7cm; z-index: 50; background: rgba(var(--bg-card-rgb, 255,255,255), 0.8); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); padding: 10px 20px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid var(--border); }
         [data-mode="dark"] .app-header { background: rgba(30,30,30,0.8); }
+        
         .date-trigger { font-size: 1.4rem; font-weight: 800; color: var(--text-main); background: transparent; border: none; cursor: pointer; display: flex; align-items: center; gap: 6px; }
         .date-trigger::after { content: "▼"; font-size: 0.7rem; color: var(--text-sub); margin-top: 2px; }
         .mode-toggle { background: transparent; border: 1px solid var(--border); width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: var(--text-main); cursor: pointer; transition: all 0.2s; }
@@ -52,7 +61,8 @@
         
         .site-tag { width: 95%; max-width: 100%; font-size: 10px; padding: 3px 6px; border-radius: 8px; color: white; margin-bottom: 1.5px; text-align: center; font-weight: bold; line-height: 1.2; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; pointer-events: none; }
         .worker-tag { color: white; }
-        [data-mode="dark"] .site-tag, [data-mode="dark"] .worker-tag { color: #000000 !important; font-weight: 800; }
+        /* [需求3] 夜間模式字體不特別加粗，改為 normal */
+        [data-mode="dark"] .site-tag, [data-mode="dark"] .worker-tag { color: #000000 !important; font-weight: bold; }
 
         /* Dashboard */
         .dashboard-row { display: flex; gap: 12px; margin-bottom: 16px; }
@@ -79,7 +89,7 @@
         .input-f:read-only { background: var(--border); color: var(--text-sub); cursor: not-allowed; }
 
         /* Picker & Overlay */
-        .overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 2000; display: none; opacity: 0; transition: opacity 0.2s; align-items: center; justify-content: center; }
+        .overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 2000; display: none; opacity: 0; transition: opacity 0.2s; align-items: center; justify-content: center; padding-top: 0.7cm; }
         .picker-container { position: fixed; bottom: 0; width: 100%; background: var(--bg-card); z-index: 2100; border-radius: 24px 24px 0 0; padding: 20px 0; transform: translateY(100%); transition: transform 0.3s cubic-bezier(0.1, 0.9, 0.2, 1); }
         .picker-actions { display: flex; justify-content: space-between; padding: 0 24px 15px; font-weight: 600; font-size: 1rem; color: var(--text-main); }
         .picker-body { height: 220px; display: flex; position: relative; overflow: hidden; mask-image: linear-gradient(to bottom, transparent, black 20%, black 80%, transparent); -webkit-mask-image: linear-gradient(to bottom, transparent, black 20%, black 80%, transparent); }
@@ -140,6 +150,8 @@
     </style>
 </head>
 <body>
+
+    <div class="top-spacer"></div>
 
     <datalist id="extraTypes">
         <option value="餐費代墊">
@@ -212,7 +224,7 @@
                         
                         <input type="date" id="wDateFilter" 
                                style="position:absolute; width:1px; height:1px; opacity:0; border:none; padding:0; margin:0; left:50%;" 
-                               onchange="if(!this.value){ this.blur(); resetDateFilter(); } else { updateDateDisplayText(); renderWorkerList(); }">
+                               onchange="if(!this.value){ this.blur(); } updateDateDisplayText(); renderWorkerList();">
                     </label>
                     
                     <div id="btnDateReset" onclick="resetDateFilter();" style="display:none; padding:10px; cursor:pointer; color:var(--text-sub); flex-shrink:0; margin-left:5px;">
@@ -248,7 +260,7 @@
                     <span style="display:flex;align-items:center;gap:5px"><svg class="icon-svg-sm" viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg> 鎖定網址</span>
                     <input type="checkbox" id="gasLock" onchange="toggleGasLock()">
                 </div>
-                <input id="gasUrl" class="input-f" placeholder="Google Apps Script URL">
+                <input id="gasUrl" class="input-f" placeholder="Google Apps Script URL" oninput="saveGasUrl(this.value)">
                 <div id="syncStatus" style="font-size:0.8rem; color:var(--text-sub); text-align:right;"></div>
             </div>
 
@@ -431,7 +443,7 @@
                         <button class="btn-ghost" style="padding:4px 8px; font-size:12px; margin:0;" onclick="toggleAddExtra()">+ 新增</button>
                     </div>
                     <div id="addExtraBox" style="display:none; background:rgba(var(--theme-r),var(--theme-g),var(--theme-b),0.1); padding:10px; border-radius:8px; margin-bottom:10px;">
-                        <input id="exDate" type="date" class="input-f" style="margin-bottom:5px" onchange="updateExtraSiteSelect('exDate', 'exSite')">
+                        <input id="exDate" type="date" class="input-f" style="margin-bottom:5px" onchange="handleMeDateChange(this, 'exSite')">
                         <select id="exSite" class="input-f" style="margin-bottom:5px; appearance: none; -webkit-appearance: none; background-image: url('data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\' width=\'24\' height=\'24\' viewBox=\'0 0 24 24\' fill=\'none\' stroke=\'%23888\' stroke-width=\'2\' stroke-linecap=\'round\' stroke-linejoin=\'round\'><polyline points=\'6 9 12 15 18 9\'/></svg>'); background-repeat: no-repeat; background-position: right 10px center; padding-right: 30px;">
                             <option value="">(無案場)</option>
                         </select>
@@ -495,7 +507,7 @@
                 </div>
                 <input type="hidden" id="meMode" value="overtime">
 
-                <input id="meDate" type="date" class="input-f" onchange="handleMeDateChange(this)">
+                <input id="meDate" type="date" class="input-f" onchange="handleMeDateChange(this, 'meSite')">
                 
                 <select id="meSite" class="input-f" style="margin-bottom:12px; appearance: none; -webkit-appearance: none; background-image: url('data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\' width=\'24\' height=\'24\' viewBox=\'0 0 24 24\' fill=\'none\' stroke=\'%23888\' stroke-width=\'2\' stroke-linecap=\'round\' stroke-linejoin=\'round\'><polyline points=\'6 9 12 15 18 9\'/></svg>'); background-repeat: no-repeat; background-position: right 10px center; padding-right: 30px;">
                     <option value="">(無案場)</option>
@@ -525,28 +537,30 @@
         </div>
     </div>
     
-    <div id="modalPieChart" class="overlay" style="z-index:2300;">
-        <div class="modal-box">
+    <div id="modalPieChart" class="overlay" style="z-index:2300; display: flex; flex-direction: column;">
+        <div class="modal-box" style="display: flex; flex-direction: column; max-height: 85vh;">
             <div class="modal-header">
                 <div class="modal-close" onclick="closeModal('modalPieChart')">
                     <svg class="icon-svg" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
                 </div>
             </div>
-            <div class="modal-content-scroll" style="display:flex; flex-direction:column;">
+            <div class="modal-content-scroll" style="flex:1; overflow-y: auto;">
                 <h3 style="margin-top:0; margin-bottom:15px; text-align:center;">支出分析</h3>
 
                 <div style="display:flex; justify-content:center; align-items:center; margin-bottom:20px;">
-                    <div id="pieChartElement" style="width:240px; height:240px; position:relative; flex-shrink:0; filter: drop-shadow(0px 8px 12px rgba(0,0,0,0.12));">
+                    <div style="width:240px; height:240px; position:relative; flex-shrink:0;">
+                        <div style="position:absolute; width:180px; height:180px; border-radius:50%; background:transparent; box-shadow:0 10px 15px rgba(0,0,0,0.15); top:45px; left:30px; z-index:-1;"></div>
+                        <div id="pieChartElement" style="width:100%; height:100%;"></div>
                     </div>
                 </div>
 
-                <div id="pieLegendBottom" style="display:flex; flex-direction:column; margin-bottom:15px; padding:0 5px;">
+                <div id="pieLegendBottom" style="display:flex; flex-direction:column; padding:0 5px;">
                 </div>
-
-                <div style="text-align:right; font-size:1rem; color:var(--text-main); font-weight:bold; border-top:1px solid var(--border); padding-top:10px;">
-                    總支出: $<span id="pieTotalDisplay">0</span><br>
-                    <span style="font-size:0.85rem; color:var(--text-sub); font-weight:400;">(含預付金額)</span>
-                </div>
+            </div>
+            
+            <div class="modal-sticky-footer" style="text-align:right; font-size:1rem; color:var(--text-main); font-weight:bold; padding-top:10px; padding-bottom: 20px; padding-right: 24px;">
+                總支出: $<span id="pieTotalDisplay">0</span><br>
+                <span style="font-size:0.85rem; color:var(--text-sub); font-weight:400;">(含預付金額)</span>
             </div>
         </div>
     </div>
@@ -660,6 +674,12 @@ window.onload = async () => {
 function saveDB() {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(db));
     syncCloud(false); 
+}
+
+// [修改1] 即時寫入並存檔
+function saveGasUrl(val) {
+    db.settings.gasUrl = val;
+    saveDB();
 }
 
 function toggleGasLock() {
@@ -968,7 +988,6 @@ function renderClientList() {
         div.innerHTML = `<span style="font-weight:normal;">${c.name}</span><span style="font-weight:normal;">$${total.toLocaleString()} ></span>`;
         list.appendChild(div);
     });
-    // 首頁付款管理的總額也只顯示扣除負數的淨額
     document.getElementById('payTotalDisplay').innerText = `$${grandTotal.toLocaleString()}`;
 }
 function getClientTotal(cid) {
@@ -1149,7 +1168,6 @@ function renderWorkerList() {
         card.onclick = () => openWorkerModal(w.id);
         list.appendChild(card);
     });
-    // [需求4] 首頁總支出，包含所有正負項目（已自動在 w.pay 中加總）
     document.getElementById('totalExp').innerText = `$${grandTotal.toLocaleString()}`;
     currentFilteredWorkerIds = filteredIds;
 }
@@ -1317,8 +1335,6 @@ function updateExtraSiteSelect(dateInputId, selectId) {
     });
     select.innerHTML = html;
 }
-
-// [需求6] 收合清空防呆
 function toggleAddExtra(forceClose) {
     const box = document.getElementById('addExtraBox');
     if (box.style.display === 'block' || forceClose) {
@@ -1339,7 +1355,6 @@ function toggleAddExtra(forceClose) {
         document.getElementById('btnAddExtraAction').innerText = "加入";
     }
 }
-
 function saveOneExtra() {
     const wid = document.getElementById('wId').value;
     const date = document.getElementById('exDate').value;
@@ -1350,7 +1365,7 @@ function saveOneExtra() {
     if(!name || isNaN(amount) || amount === 0) return;
     
     if(name.includes('領') && amount > 0) {
-        if(!confirm(`提醒：項目名稱包含「領」，通常為預支扣款，應輸入負數。\n\n您確定要存為「正數」嗎？`)) {
+        if(!confirm(`項目名稱包含「領」字，通常為預付金額，已支付的金額請打負數。\n您是否仍存為正數？(待支付)`)) {
             return;
         }
     }
@@ -1438,7 +1453,8 @@ function setMeMode(mode) {
     }
 }
 
-function handleMeDateChange(el) {
+// [修改2] 處理批次日曆的原生重置：退回今天並收合
+function handleMeDateChange(el, targetSelectId = 'meSite') {
     if(!el.value) {
         el.blur();
         const today = new Date();
@@ -1449,7 +1465,7 @@ function handleMeDateChange(el) {
     } else {
         el.blur();
     }
-    updateExtraSiteSelect(el.id, 'meSite');
+    updateExtraSiteSelect(el.id, targetSelectId);
 }
 
 function openMultiExtra() {
@@ -1503,7 +1519,7 @@ function saveMultiExtra() {
         if(!name || isNaN(amt) || amt === 0) return alert('資料不完整');
         
         if(name.includes('領') && amt > 0) {
-            if(!confirm(`提醒：項目名稱包含「領」，通常為預支扣款，應輸入負數。\n\n您確定要存為「正數」嗎？`)) return;
+            if(!confirm(`項目名稱包含「領」字，通常為預付金額，已支付的金額請打負數。\n您是否仍存為正數？(待支付)`)) return;
         }
         
         chks.forEach(c => db.extras.push({ id:'e'+Date.now()+Math.random(), wid: c.value, date, siteId, name, note, amount: amt }));
@@ -1527,10 +1543,10 @@ function saveMultiExtra() {
 }
 
 // ----------------------------------------------------
-// [全新動態圓餅圖邏輯] SVG 完美無縫白線、精確正向定位數字
+// [全新動態圓餅圖邏輯] 修正文字遠近不一，純幾何定位絕對水平
 // ----------------------------------------------------
 function getCoordinatesForPercent(percent, radius = 1) {
-    // 從 12 點鐘方向開始畫 (-0.25 抵銷 SVG 預設的 3 點鐘起點)
+    // 圓餅圖從正上方 12 點鐘方向開始計算
     const angle = 2 * Math.PI * (percent - 0.25);
     const x = Math.cos(angle) * radius;
     const y = Math.sin(angle) * radius;
@@ -1570,7 +1586,7 @@ function openPieChart() {
     const mExtras = db.extras.filter(e => e.date.startsWith(ym));
     let validEx = mExtras.filter(e => {
         if(!validWids.includes(e.wid)) return false;
-        if(Number(e.amount) < 0) return false; // [需求4] 圓餅圖完全排除負數
+        if(Number(e.amount) < 0) return false; 
         if(dFilter && e.date !== dFilter) return false;
         if(filterProjectIds.length > 0) {
            const linkedSite = db.sites.find(s => s.id === e.siteId);
@@ -1599,8 +1615,8 @@ function openPieChart() {
         item.color = dynamicPalette[index];
     });
 
-    // viewBox 放寬，讓外圍的文字不會被切掉
-    let svgHtml = `<svg viewBox="-1.4 -1.4 2.8 2.8" style="width:100%; height:100%; overflow: visible;">`;
+    // 擴大 viewBox 以容納外圍的百分比文字
+    let svgHtml = `<svg viewBox="-1.35 -1.35 2.7 2.7" style="width:100%; height:100%; overflow: visible;">`;
     let legendBottomHtml = '';
     let cumulativePercent = 0;
 
@@ -1614,41 +1630,38 @@ function openPieChart() {
             const sliceStartPercent = cumulativePercent; 
             const pctText = (percent * 100).toFixed(0);
 
-            // SVG 切塊 (無邊框)
             if (percent === 1) {
+                // 完全滿圓的畫法
                 svgHtml += `<circle cx="0" cy="0" r="1" fill="${item.color}" />`;
             } else {
                 const [startX, startY] = getCoordinatesForPercent(sliceStartPercent);
                 cumulativePercent += percent;
                 const [endX, endY] = getCoordinatesForPercent(cumulativePercent);
                 const largeArcFlag = percent > 0.5 ? 1 : 0;
+                
+                // 畫出區塊切片
                 const pathData = `M 0 0 L ${startX} ${startY} A 1 1 0 ${largeArcFlag} 1 ${endX} ${endY} Z`;
                 svgHtml += `<path d="${pathData}" fill="${item.color}" />`;
 
-                // 畫分割白線
+                // [修改2] 白線厚度縮小一半 (0.02)
                 if(numColors > 1) {
                     linesHtml += `<line x1="0" y1="0" x2="${startX}" y2="${startY}" stroke="var(--bg-card)" stroke-width="0.02" stroke-linecap="round" />`;
                 }
 
-                // 放置水平正向的數字 (%) 
+                // [修改7] 絕對幾何等距定位法 (字體永遠水平正向，完美置中)
                 if (percent > 0.03) { 
                     const labelPercent = sliceStartPercent + (percent / 2);
-                    const labelRadius = 1.15; 
+                    const labelRadius = 1.18; // 文字中心點的絕對半徑位置
                     const [labX, labY] = getCoordinatesForPercent(labelPercent, labelRadius);
                     
-                    let anchor = "middle";
-                    if (labX > 0.05) anchor = "start";
-                    else if (labX < -0.05) anchor = "end";
-
-                    // 這裡的文字不用旋轉，天然保持水平正立
-                    svgHtml += `<text x="${labX}" y="${labY}" fill="var(--text-sub)" font-size="0.14px" font-weight="400" text-anchor="${anchor}" dominant-baseline="central">${pctText}%</text>`;
+                    // 永遠 text-anchor="middle"，這能保證字體外框不論文字長短都對齊圓心軌跡
+                    svgHtml += `<text x="${labX}" y="${labY}" fill="var(--text-sub)" font-size="0.14px" font-weight="400" text-anchor="middle" dominant-baseline="central">${pctText}%</text>`;
                 }
             }
 
             const detailPctText = (percent * 100).toFixed(1);
-            // 移除虛線 bottom-border
             legendBottomHtml += `
-                <div style="display:flex; justify-content:space-between; align-items:center; padding:6px 0;">
+                <div style="display:flex; justify-content:space-between; align-items:center; padding:6px 0; border-bottom:1px solid var(--border);">
                     <div style="display:flex; align-items:center; gap:8px;">
                         <div style="width:12px; height:12px; background:${item.color}; border-radius:2px;"></div>
                         <span style="font-weight: 600; font-size:0.85rem;">${item.label} <span style="font-weight: normal; color:var(--text-sub); font-size:0.85em;">(${detailPctText}%)</span></span>
@@ -1659,7 +1672,7 @@ function openPieChart() {
         });
         
         svgHtml += linesHtml;
-        // 內圈白洞縮小
+        // [修改1] 內圈白洞縮小比例
         svgHtml += `<circle cx="0" cy="0" r="0.38" fill="var(--bg-card)" />`;
         svgHtml += `</svg>`;
         
